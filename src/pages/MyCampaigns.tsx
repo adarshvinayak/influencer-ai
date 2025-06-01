@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Plus, MoreVertical, Instagram, Youtube, MapPin, Calendar, Users, Target, FolderPlus } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import CampaignDetailModal from "@/components/CampaignDetailModal";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { Campaign } from "@/types/supabase-custom";
 
@@ -315,15 +314,6 @@ const MyCampaigns = () => {
           </CardContent>
         </Card>
       )}
-
-      {/* Campaign Detail Modal */}
-      <CampaignDetailModal
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        campaign={selectedCampaign}
-        onSave={handleSaveCampaign}
-        onViewProgress={handleViewProgress}
-      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
