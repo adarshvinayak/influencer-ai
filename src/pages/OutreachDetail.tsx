@@ -11,12 +11,14 @@ import { useInfluencers } from "@/hooks/useInfluencers";
 import { useUserBrand } from "@/hooks/useUserBrand";
 import { useCommunicationLogs } from "@/hooks/useCommunicationLogs";
 import { useToast } from "@/hooks/use-toast";
+import { simulatePhoneCall } from "@/services/callSimulationService";
 
 const OutreachDetail = () => {
   const { outreachId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+  const [isSimulatingCall, setIsSimulatingCall] = useState(false);
   const [aiScript, setAiScript] = useState("");
 
   console.log('OutreachDetail rendered with outreachId:', outreachId);
@@ -33,6 +35,60 @@ const OutreachDetail = () => {
 
   const campaign = campaigns?.find(c => c.campaign_id === outreach?.campaign_id);
   const influencer = influencers?.find(i => i.influencer_id === outreach?.influencer_id);
+
+  const handleSimulateCall = async () => {
+    if (!outreach || !campaign || !influencer || !userBrand || !outreachId) {
+      toast({
+        title: "Missing Data",
+        description: "Unable to simulate call due to missing information.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (outreach.outreach_method !== 'phone') {
+      toast({
+        title: "Invalid Outreach Method",
+        description: "Call simulation is only available for phone outreach.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSimulatingCall(true);
+    try {
+      const result = await simulatePhoneCall(
+        outreachId,
+        influencer.full_name,
+        campaign.campaign_name,
+        userBrand.brand_name
+      );
+
+      if (result.success) {
+        toast({
+          title: "Call Simulated Successfully!",
+          description: "The simulated call transcript has been recorded in the communication log."
+        });
+        // Refresh the page to show updated logs
+        window.location.reload();
+      } else {
+        toast({
+          title: "Simulation Failed",
+          description: result.error || "Failed to simulate call. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error simulating call:', error);
+      toast({
+        title: "Error",
+        description: "Failed to simulate call. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSimulatingCall(false);
+    }
+  };
 
   const generateAIScript = async () => {
     if (!outreach || !campaign || !influencer || !userBrand) {
@@ -224,6 +280,30 @@ ${userBrand.brand_name} Team`;
           </div>
         </CardContent>
       </Card>
+
+      {/* Call Simulation for Phone Outreach */}
+      {outreach.outreach_method === 'phone' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <PhoneCall className="h-5 w-5 mr-2 text-teal-500" />
+              Call Simulation
+            </CardTitle>
+            <CardDescription>
+              Simulate a phone call conversation using AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={handleSimulateCall} 
+              disabled={isSimulatingCall}
+              className="bg-teal-500 hover:bg-teal-600"
+            >
+              {isSimulatingCall ? "Simulating Call..." : "Simulate Phone Call"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* AI Script Generation */}
       <Card>
