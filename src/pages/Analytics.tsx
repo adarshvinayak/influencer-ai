@@ -1,155 +1,128 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Users, MessageSquare, DollarSign, Clock, Bot, BarChart3, PieChart, Info } from "lucide-react";
-
 const Analytics = () => {
   // Mock analytics data
-  const kpiData = [
-    {
-      title: "Total Influencers Contacted",
-      value: "128",
-      subtitle: "Across 5 Campaigns",
-      trend: "+15%",
-      trendUp: true,
-      icon: Users
-    },
-    {
-      title: "Deals Finalized",
-      value: "22",
-      subtitle: "Success Rate: 17.2%",
-      trend: "+8%",
-      trendUp: true,
-      icon: DollarSign
-    },
-    {
-      title: "Avg. Time to Deal",
-      value: "6.5 Days",
-      subtitle: "First outreach to signed contract",
-      trend: "-2 days",
-      trendUp: true,
-      icon: Clock
-    },
-    {
-      title: "Total AI Interactions",
-      value: "500+",
-      subtitle: "Emails, Calls, Chats by AI",
-      trend: "+25%",
-      trendUp: true,
-      icon: Bot
-    }
-  ];
-
-  const campaignData = [
-    {
-      campaign: "Spring Fashion",
-      contacted: 45,
-      deals: 8,
-      budget: "₹2,50,000",
-      spend: "₹1,44,000",
-      roi: "285%"
-    },
-    {
-      campaign: "Tech Gadget Reviews",
-      contacted: 32,
-      deals: 6,
-      budget: "₹1,80,000",
-      spend: "₹1,08,000",
-      roi: "190%"
-    },
-    {
-      campaign: "Organic Food Fest",
-      contacted: 28,
-      deals: 5,
-      budget: "₹1,20,000",
-      spend: "₹90,000",
-      roi: "240%"
-    },
-    {
-      campaign: "Fitness Challenge",
-      contacted: 15,
-      deals: 2,
-      budget: "₹80,000",
-      spend: "₹36,000",
-      roi: "150%"
-    },
-    {
-      campaign: "Travel Diaries",
-      contacted: 8,
-      deals: 1,
-      budget: "₹60,000",
-      spend: "₹18,000",
-      roi: "120%"
-    }
-  ];
-
-  const influencerEngagement = [
-    {
-      influencer: "Ananya Joshi",
-      campaigns: 2,
-      methods: "Email, Chat",
-      status: "Deal Signed",
-      interactions: 8,
-      timeToStatus: "4 days",
-      responseRate: "100%",
-      contentScore: "9.2/10"
-    },
-    {
-      influencer: "Rohan Verma",
-      campaigns: 1,
-      methods: "Phone, Email",
-      status: "Negotiating",
-      interactions: 12,
-      timeToStatus: "7 days",
-      responseRate: "85%",
-      contentScore: "8.7/10"
-    },
-    {
-      influencer: "Priya Singh",
-      campaigns: 1,
-      methods: "Email",
-      status: "Positive Interest",
-      interactions: 4,
-      timeToStatus: "2 days",
-      responseRate: "100%",
-      contentScore: "8.9/10"
-    }
-  ];
-
-  const aiActivity = [
-    {
-      time: "2 hours ago",
-      agent: "AI Sam (GPT-4 & ElevenLabs)",
-      action: "call to @InfluencerX for Campaign Y",
-      outcome: "Follow-up scheduled"
-    },
-    {
-      time: "4 hours ago",
-      agent: "AI Eva (GPT-4)",
-      action: "email to @FashionGuru for Spring Fashion",
-      outcome: "Positive response received"
-    },
-    {
-      time: "6 hours ago",
-      agent: "AI Sam (GPT-4 & Voice)",
-      action: "negotiation with @TechReviewer",
-      outcome: "Rate agreed: ₹15k"
-    },
-    {
-      time: "1 day ago",
-      agent: "AI Eva (GPT-4)",
-      action: "follow-up email to @FoodBlogger",
-      outcome: "Contract sent for signing"
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
+  const kpiData = [{
+    title: "Total Influencers Contacted",
+    value: "128",
+    subtitle: "Across 5 Campaigns",
+    trend: "+15%",
+    trendUp: true,
+    icon: Users
+  }, {
+    title: "Deals Finalized",
+    value: "22",
+    subtitle: "Success Rate: 17.2%",
+    trend: "+8%",
+    trendUp: true,
+    icon: DollarSign
+  }, {
+    title: "Avg. Time to Deal",
+    value: "6.5 Days",
+    subtitle: "First outreach to signed contract",
+    trend: "-2 days",
+    trendUp: true,
+    icon: Clock
+  }, {
+    title: "Total AI Interactions",
+    value: "500+",
+    subtitle: "Emails, Calls, Chats by AI",
+    trend: "+25%",
+    trendUp: true,
+    icon: Bot
+  }];
+  const campaignData = [{
+    campaign: "Spring Fashion",
+    contacted: 45,
+    deals: 8,
+    budget: "₹2,50,000",
+    spend: "₹1,44,000",
+    roi: "285%"
+  }, {
+    campaign: "Tech Gadget Reviews",
+    contacted: 32,
+    deals: 6,
+    budget: "₹1,80,000",
+    spend: "₹1,08,000",
+    roi: "190%"
+  }, {
+    campaign: "Organic Food Fest",
+    contacted: 28,
+    deals: 5,
+    budget: "₹1,20,000",
+    spend: "₹90,000",
+    roi: "240%"
+  }, {
+    campaign: "Fitness Challenge",
+    contacted: 15,
+    deals: 2,
+    budget: "₹80,000",
+    spend: "₹36,000",
+    roi: "150%"
+  }, {
+    campaign: "Travel Diaries",
+    contacted: 8,
+    deals: 1,
+    budget: "₹60,000",
+    spend: "₹18,000",
+    roi: "120%"
+  }];
+  const influencerEngagement = [{
+    influencer: "Ananya Joshi",
+    campaigns: 2,
+    methods: "Email, Chat",
+    status: "Deal Signed",
+    interactions: 8,
+    timeToStatus: "4 days",
+    responseRate: "100%",
+    contentScore: "9.2/10"
+  }, {
+    influencer: "Rohan Verma",
+    campaigns: 1,
+    methods: "Phone, Email",
+    status: "Negotiating",
+    interactions: 12,
+    timeToStatus: "7 days",
+    responseRate: "85%",
+    contentScore: "8.7/10"
+  }, {
+    influencer: "Priya Singh",
+    campaigns: 1,
+    methods: "Email",
+    status: "Positive Interest",
+    interactions: 4,
+    timeToStatus: "2 days",
+    responseRate: "100%",
+    contentScore: "8.9/10"
+  }];
+  const aiActivity = [{
+    time: "2 hours ago",
+    agent: "AI Sam (GPT-4 & ElevenLabs)",
+    action: "call to @InfluencerX for Campaign Y",
+    outcome: "Follow-up scheduled"
+  }, {
+    time: "4 hours ago",
+    agent: "AI Eva (GPT-4)",
+    action: "email to @FashionGuru for Spring Fashion",
+    outcome: "Positive response received"
+  }, {
+    time: "6 hours ago",
+    agent: "AI Sam (GPT-4 & Voice)",
+    action: "negotiation with @TechReviewer",
+    outcome: "Rate agreed: ₹15k"
+  }, {
+    time: "1 day ago",
+    agent: "AI Eva (GPT-4)",
+    action: "follow-up email to @FoodBlogger",
+    outcome: "Contract sent for signing"
+  }];
+  return <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Campaign & Outreach Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Campaign & Outreach Analytics (Mock Data)</h1>
           <p className="text-gray-600 mt-2">Track AI performance and campaign success metrics</p>
         </div>
         
@@ -169,8 +142,7 @@ const Analytics = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpiData.map((kpi, index) => (
-          <Card key={index}>
+        {kpiData.map((kpi, index) => <Card key={index}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -187,8 +159,7 @@ const Analytics = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+          </Card>)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -242,8 +213,7 @@ const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-80 overflow-y-auto">
-              {aiActivity.map((activity, index) => (
-                <div key={index} className="flex space-x-3 p-3 border rounded-lg">
+              {aiActivity.map((activity, index) => <div key={index} className="flex space-x-3 p-3 border rounded-lg">
                   <Bot className="h-5 w-5 text-purple-500 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm">
@@ -252,8 +222,7 @@ const Analytics = () => {
                     <p className="text-sm text-green-600 mt-1">Outcome: {activity.outcome}</p>
                     <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
           </CardContent>
         </Card>
@@ -288,8 +257,7 @@ const Analytics = () => {
                 </tr>
               </thead>
               <tbody>
-                {campaignData.map((campaign, index) => (
-                  <tr key={index} className="border-b">
+                {campaignData.map((campaign, index) => <tr key={index} className="border-b">
                     <td className="py-3 font-medium">{campaign.campaign}</td>
                     <td className="py-3">{campaign.contacted}</td>
                     <td className="py-3">{campaign.deals}</td>
@@ -300,8 +268,7 @@ const Analytics = () => {
                         {campaign.roi}
                       </Badge>
                     </td>
-                  </tr>
-                ))}
+                  </tr>)}
               </tbody>
             </table>
           </div>
@@ -330,8 +297,7 @@ const Analytics = () => {
                 </tr>
               </thead>
               <tbody>
-                {influencerEngagement.map((influencer, index) => (
-                  <tr key={index} className="border-b">
+                {influencerEngagement.map((influencer, index) => <tr key={index} className="border-b">
                     <td className="py-3 font-medium">{influencer.influencer}</td>
                     <td className="py-3">{influencer.campaigns}</td>
                     <td className="py-3">{influencer.methods}</td>
@@ -349,8 +315,7 @@ const Analytics = () => {
                         </span>
                       </span>
                     </td>
-                  </tr>
-                ))}
+                  </tr>)}
               </tbody>
             </table>
           </div>
@@ -395,8 +360,6 @@ const Analytics = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Analytics;
