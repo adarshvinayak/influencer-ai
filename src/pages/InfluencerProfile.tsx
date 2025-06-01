@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { useInfluencers } from "@/hooks/useInfluencers";
+import { useInfluencerById } from "@/hooks/useInfluencers";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useOutreachActivities } from "@/hooks/useOutreachActivities";
 
@@ -36,7 +37,7 @@ const InfluencerProfile = () => {
     influencer,
     isLoading,
     error
-  } = useInfluencers({ influencerId: id });
+  } = useInfluencerById(id || '');
   const { campaigns } = useCampaigns();
   const { addOutreachActivity, isAddingOutreachActivity } = useOutreachActivities();
 
