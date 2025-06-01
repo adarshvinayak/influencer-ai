@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +9,9 @@ import { PhoneCall, MessageSquare, Mail, Users, Bot, AlertTriangle, Info, CheckC
 
 const Summary = () => {
   const [filters, setFilters] = useState({
-    campaign: "",
-    status: "",
-    method: ""
+    campaign: "all",
+    status: "all",
+    method: "all"
   });
 
   // Mock outreach data
@@ -123,7 +122,7 @@ const Summary = () => {
                 <SelectValue placeholder="All Campaigns" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Campaigns</SelectItem>
+                <SelectItem value="all">All Campaigns</SelectItem>
                 <SelectItem value="spring-fashion">Spring Fashion</SelectItem>
                 <SelectItem value="tech-reviews">Tech Gadget Reviews</SelectItem>
                 <SelectItem value="organic-food">Organic Food Fest</SelectItem>
@@ -135,7 +134,7 @@ const Summary = () => {
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="active">Active Outreach</SelectItem>
                 <SelectItem value="positive">Positive Responses</SelectItem>
                 <SelectItem value="deals">Finalized Deals</SelectItem>
@@ -148,7 +147,7 @@ const Summary = () => {
                 <SelectValue placeholder="All Methods" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Methods</SelectItem>
+                <SelectItem value="all">All Methods</SelectItem>
                 <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="phone">Phone Call</SelectItem>
                 <SelectItem value="chat">Chat</SelectItem>
