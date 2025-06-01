@@ -11,6 +11,7 @@ import Signup from "./pages/Signup";
 import CreateCampaign from "./pages/CreateCampaign";
 import FindInfluencers from "./pages/FindInfluencers";
 import InfluencerProfile from "./pages/InfluencerProfile";
+import OutreachDetail from "./pages/OutreachDetail";
 import Summary from "./pages/Summary";
 import Analytics from "./pages/Analytics";
 import MyCampaigns from "./pages/MyCampaigns";
@@ -58,6 +59,7 @@ const App = () => {
               <Route path="campaigns/create" element={<CreateCampaign />} />
               <Route path="influencers" element={<FindInfluencers />} />
               <Route path="influencers/:id" element={<InfluencerProfile />} />
+              <Route path="outreach/:outreachId" element={<OutreachDetail />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="settings" element={<Profile />} />

@@ -12,6 +12,7 @@ import { useCommunicationLogs } from "@/hooks/useCommunicationLogs";
 import { useDealsContracts } from "@/hooks/useDealsContracts";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useInfluencers } from "@/hooks/useInfluencers";
+import ActiveOutreachCards from "@/components/ActiveOutreachCards";
 
 const Summary = () => {
   const { campaignId, influencerId } = useParams();
@@ -272,6 +273,9 @@ const Summary = () => {
         <h1 className="text-3xl font-bold text-gray-900">Campaign Dashboard & Outreach Summary</h1>
         <p className="text-gray-600 mt-2">Monitor AI-driven outreach progress and manage deals</p>
       </div>
+
+      {/* Active Outreach Cards */}
+      <ActiveOutreachCards />
 
       {/* Dashboard Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

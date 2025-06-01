@@ -9,6 +9,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useOutreachActivities } from "@/hooks/useOutreachActivities";
 import { useToast } from "@/hooks/use-toast";
+
 const InfluencerProfile = () => {
   const {
     id
@@ -20,6 +21,7 @@ const InfluencerProfile = () => {
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [selectedMethod, setSelectedMethod] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdOutreachId, setCreatedOutreachId] = useState("");
   const {
     campaigns
   } = useCampaigns();
@@ -69,6 +71,7 @@ const InfluencerProfile = () => {
       year: "2023"
     }]
   };
+
   const handleOutreachSubmit = async () => {
     if (!selectedCampaign || !selectedMethod) return;
     try {
@@ -82,7 +85,14 @@ const InfluencerProfile = () => {
         status: 'AI Drafting' as const,
         notes_and_alerts: `AI outreach initiated for ${influencer.name} via ${selectedMethod}`
       };
+      
+      // Add outreach activity and get the created record
       addOutreachActivity(outreachData);
+      
+      // Generate a mock outreach ID for navigation (in real app, this would come from the API response)
+      const mockOutreachId = `outreach_${Date.now()}`;
+      setCreatedOutreachId(mockOutreachId);
+      
       toast({
         title: "AI Outreach Initiated!",
         description: `AI agents are now reaching out to ${influencer.name} for your campaign.`
@@ -97,10 +107,14 @@ const InfluencerProfile = () => {
       });
     }
   };
-  const handleTrackOnSummaryPage = () => {
-    // Navigate to specific summary page for this outreach
-    navigate(`/app/dashboard/${selectedCampaign}/${id}`);
+
+  const handleTrackOnOutreachPage = () => {
+    // Navigate to the new outreach detail page
+    // In a real app, you'd use the actual outreach ID from the database response
+    const outreachId = createdOutreachId || `outreach_${Date.now()}`;
+    navigate(`/app/outreach/${outreachId}`);
   };
+
   return <div className="max-w-6xl mx-auto space-y-6">
       {/* Header Banner */}
       <Card>
@@ -379,7 +393,7 @@ const InfluencerProfile = () => {
             <p className="text-sm text-gray-600">Track progress on 'Summary' page & 'Notifications'. Good luck!</p>
           </div>
           <div className="flex flex-col space-y-2">
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnSummaryPage}>Track on Outreach Detail Page</Button>
+            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage}>Track on Outreach Detail Page</Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>
