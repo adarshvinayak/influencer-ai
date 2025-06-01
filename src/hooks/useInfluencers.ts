@@ -8,6 +8,7 @@ export interface Influencer {
   username_handle?: string;
   profile_picture_url?: string;
   bio_description?: string;
+  bio?: string; // Add alias for bio_description
   active_since_year?: number;
   location_city?: string;
   location_state_india?: string;
@@ -19,6 +20,13 @@ export interface Influencer {
   availability_status?: string;
   verification_status?: string;
   preferred_communication_languages?: string[];
+  // Add platform-specific follower counts
+  instagram_followers?: number;
+  youtube_subscribers?: number;
+  facebook_followers?: number;
+  twitter_followers?: number;
+  est_audience_reach?: number;
+  website_url?: string;
 }
 
 export interface PlatformAccount {
@@ -88,14 +96,54 @@ export const useInfluencerById = (influencerId: string) => {
   } = useQuery({
     queryKey: ['influencer', influencerId],
     queryFn: async (): Promise<Influencer | null> => {
-      const { data, error } = await supabase
+      // Get influencer data
+      const { data: influencerData, error: influencerError } = await supabase
         .from('influencers')
         .select('*')
         .eq('influencer_id', influencerId)
         .single();
       
-      if (error) throw new Error(error.message);
-      return data;
+      if (influencerError) throw new Error(influencerError.message);
+      
+      // Get platform accounts data
+      const { data: platformAccounts, error: platformError } = await supabase
+        .from('platform_accounts')
+        .select('*')
+        .eq('influencer_id', influencerId);
+      
+      if (platformError) {
+        console.warn('Error fetching platform accounts:', platformError.message);
+      }
+      
+      // Merge platform data with influencer data
+      const enrichedInfluencer: Influencer = {
+        ...influencerData,
+        bio: influencerData.bio_description, // Add alias
+        est_audience_reach: influencerData.overall_follower_count_estimate,
+        website_url: '', // This would need to come from somewhere else or be added to the schema
+      };
+      
+      // Add platform-specific follower counts
+      if (platformAccounts) {
+        platformAccounts.forEach(account => {
+          switch (account.platform_name.toLowerCase()) {
+            case 'instagram':
+              enrichedInfluencer.instagram_followers = account.follower_count || 0;
+              break;
+            case 'youtube':
+              enrichedInfluencer.youtube_subscribers = account.follower_count || 0;
+              break;
+            case 'facebook':
+              enrichedInfluencer.facebook_followers = account.follower_count || 0;
+              break;
+            case 'twitter':
+              enrichedInfluencer.twitter_followers = account.follower_count || 0;
+              break;
+          }
+        });
+      }
+      
+      return enrichedInfluencer;
     },
     enabled: !!influencerId
   });
