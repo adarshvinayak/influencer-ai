@@ -25,14 +25,19 @@ export const useCommunicationLogs = (outreachId?: string) => {
   } = useQuery({
     queryKey: ['communicationLogs', outreachId],
     queryFn: async (): Promise<CommunicationLog[]> => {
-      if (!outreachId) return [];
-      
-      // Validate that outreachId is a valid UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(outreachId)) {
-        console.warn('Invalid UUID format for outreachId:', outreachId);
+      if (!outreachId) {
+        console.log('No outreachId provided, returning empty array');
         return [];
       }
+      
+      // Validate that outreachId is a valid UUID format (more lenient validation)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(outreachId)) {
+        console.warn('Invalid UUID format for outreachId:', outreachId, 'Skipping communication logs query');
+        return [];
+      }
+      
+      console.log('Fetching communication logs for outreachId:', outreachId);
       
       const { data, error } = await supabase
         .from('communication_logs')
@@ -40,7 +45,12 @@ export const useCommunicationLogs = (outreachId?: string) => {
         .eq('outreach_id', outreachId)
         .order('timestamp', { ascending: false });
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching communication logs:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Communication logs fetched successfully:', data?.length || 0, 'logs');
       return data || [];
     },
     enabled: !!outreachId

@@ -19,12 +19,17 @@ const OutreachDetail = () => {
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
   const [aiScript, setAiScript] = useState("");
 
+  console.log('OutreachDetail rendered with outreachId:', outreachId);
+
   const { outreachActivities, isLoading: isLoadingOutreach } = useOutreachActivities();
   const { campaigns } = useCampaigns();
   const { influencers } = useInfluencers({});
   const { userBrand } = useUserBrand();
   const outreach = outreachActivities?.find(item => item.outreach_id === outreachId);
   const { communicationLogs } = useCommunicationLogs(outreachId);
+
+  console.log('Found outreach activity:', !!outreach);
+  console.log('Communication logs count:', communicationLogs?.length || 0);
 
   const campaign = campaigns?.find(c => c.campaign_id === outreach?.campaign_id);
   const influencer = influencers?.find(i => i.influencer_id === outreach?.influencer_id);
