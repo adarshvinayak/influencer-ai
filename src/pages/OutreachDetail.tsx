@@ -14,20 +14,24 @@ const OutreachDetail = () => {
 
   console.log('OutreachDetail rendered with outreachId:', outreachId);
 
-  const { outreachActivities, isLoading: isLoadingOutreach } = useOutreachActivities();
+  const { outreachActivities, isLoading: isLoadingOutreach, error: outreachError } = useOutreachActivities();
   const { campaigns } = useCampaigns();
   const { influencers } = useInfluencers({});
   const { userBrand } = useUserBrand();
+  
+  // Find the specific outreach activity by ID
   const outreach = outreachActivities?.find(item => item.outreach_id === outreachId);
-  const { communicationLogs } = useCommunicationLogs(outreachId);
+  const { communicationLogs, isLoading: isLoadingLogs } = useCommunicationLogs(outreachId);
 
-  console.log('Found outreach activity:', !!outreach);
+  console.log('Found outreach activity:', !!outreach, outreach);
   console.log('Communication logs count:', communicationLogs?.length || 0);
+  console.log('Outreach activities total:', outreachActivities?.length || 0);
 
   const campaign = campaigns?.find(c => c.campaign_id === outreach?.campaign_id);
   const influencer = influencers?.find(i => i.influencer_id === outreach?.influencer_id);
 
-  if (isLoadingOutreach || !outreach) {
+  // Show loading state while any required data is loading
+  if (isLoadingOutreach || isLoadingLogs) {
     return (
       <div className="space-y-6">
         <OutreachHeader 
@@ -42,11 +46,35 @@ const OutreachDetail = () => {
     );
   }
 
+  // Show error state if outreach not found or there was an error
+  if (outreachError || !outreach) {
+    return (
+      <div className="space-y-6">
+        <OutreachHeader 
+          influencerName="Unknown" 
+          campaignName="Unknown" 
+          status="Error" 
+        />
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Outreach Activity Not Found</h3>
+            <p className="text-gray-600 mb-4">
+              {outreachError ? `Error: ${outreachError.message}` : 'The outreach activity you\'re looking for doesn\'t exist or couldn\'t be loaded.'}
+            </p>
+            <p className="text-sm text-gray-500">
+              Outreach ID: {outreachId || 'None provided'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <OutreachHeader 
-        influencerName={influencer?.full_name}
-        campaignName={campaign?.campaign_name}
+        influencerName={influencer?.full_name || 'Unknown Influencer'}
+        campaignName={campaign?.campaign_name || 'Unknown Campaign'}
         status={outreach.status}
       />
 

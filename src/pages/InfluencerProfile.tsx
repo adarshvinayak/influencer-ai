@@ -20,9 +20,10 @@ const InfluencerProfile = () => {
   const [selectedMethod, setSelectedMethod] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOutreachId, setCreatedOutreachId] = useState("");
+  const [isCreatingOutreach, setIsCreatingOutreach] = useState(false);
 
   const { campaigns } = useCampaigns();
-  const { addOutreachActivity } = useOutreachActivities();
+  const { addOutreachActivityAsync } = useOutreachActivities();
   const { userBrand } = useUserBrand();
   const {
     influencer,
@@ -46,9 +47,18 @@ const InfluencerProfile = () => {
   };
 
   const handleOutreachSubmit = async () => {
-    if (!selectedCampaign || !selectedMethod || !influencer || !userBrand) return;
+    if (!selectedCampaign || !selectedMethod || !influencer || !userBrand) {
+      toast({
+        title: "Error",
+        description: "Please select both campaign and outreach method.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const selectedCampaignData = campaigns?.find(c => c.campaign_id === selectedCampaign);
+    
+    setIsCreatingOutreach(true);
     
     try {
       console.log('Creating outreach with data:', {
@@ -67,16 +77,17 @@ const InfluencerProfile = () => {
         ai_agent_name: selectedMethod === 'phone' ? 'Sam (Voice)' : 'Eva (Chat/Email)',
         status: 'AI Drafting' as const,
         notes_and_alerts: `AI outreach initiated for ${influencer.full_name} via ${selectedMethod}`,
-        // Add the required fields for simulation
+        // Add the required fields for simulation (these won't be inserted into DB)
         influencerName: influencer.full_name,
         campaignName: selectedCampaignData?.campaign_name || 'Unknown Campaign',
         brandName: userBrand.brand_name || 'Unknown Brand'
       };
 
-      addOutreachActivity(outreachData);
+      // Use the async version to get the actual created outreach data
+      const createdOutreach = await addOutreachActivityAsync(outreachData);
       
-      const mockOutreachId = `outreach_${Date.now()}`;
-      setCreatedOutreachId(mockOutreachId);
+      // Store the real outreach ID
+      setCreatedOutreachId(createdOutreach.outreach_id);
       
       toast({
         title: "AI Outreach Initiated!",
@@ -88,15 +99,24 @@ const InfluencerProfile = () => {
       console.error('Error creating outreach activity:', error);
       toast({
         title: "Error",
-        description: "Failed to initiate outreach. Please try again.",
+        description: `Failed to initiate outreach: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
+    } finally {
+      setIsCreatingOutreach(false);
     }
   };
 
   const handleTrackOnOutreachPage = () => {
-    const outreachId = createdOutreachId || `outreach_${Date.now()}`;
-    navigate(`/app/outreach/${outreachId}`);
+    if (createdOutreachId) {
+      navigate(`/app/outreach/${createdOutreachId}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Unable to navigate to outreach page. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatFollowerCount = (count?: number) => {
@@ -294,10 +314,10 @@ const InfluencerProfile = () => {
 
                   <Button 
                     className="w-full bg-teal-500 hover:bg-teal-600" 
-                    disabled={!selectedCampaign || !selectedMethod || !userBrand} 
+                    disabled={!selectedCampaign || !selectedMethod || !userBrand || isCreatingOutreach} 
                     onClick={handleOutreachSubmit}
                   >
-                    Confirm & Launch AI Outreach
+                    {isCreatingOutreach ? 'Creating Outreach...' : 'Confirm & Launch AI Outreach'}
                   </Button>
                 </div>
               </DialogContent>
@@ -489,7 +509,13 @@ const InfluencerProfile = () => {
             <p className="text-sm text-gray-600">Track progress on 'Summary' page & 'Notifications'. Good luck!</p>
           </div>
           <div className="flex flex-col space-y-2">
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage}>Track on Outreach Detail Page</Button>
+            <Button 
+              className="bg-teal-500 hover:bg-teal-600" 
+              onClick={handleTrackOnOutreachPage}
+              disabled={!createdOutreachId}
+            >
+              Track on Outreach Detail Page
+            </Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>

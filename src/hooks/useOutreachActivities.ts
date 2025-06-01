@@ -65,6 +65,8 @@ export const useOutreachActivities = (filters?: {
       campaignName?: string;
       brandName?: string;
     }) => {
+      console.log('Starting outreach activity creation with data:', activityData);
+      
       // Get the current user's brand_id from the brands table
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -75,30 +77,52 @@ export const useOutreachActivities = (filters?: {
         .eq('auth_user_id', user.id)
         .single();
       
-      if (brandError || !brandData) throw new Error('Brand not found');
+      if (brandError || !brandData) {
+        console.error('Brand lookup error:', brandError);
+        throw new Error('Brand not found. Please ensure your profile is set up correctly.');
+      }
+
+      console.log('Found brand:', brandData);
+
+      // Prepare data for database insertion - only include valid database columns
+      const dbData = {
+        campaign_id: activityData.campaign_id,
+        influencer_id: activityData.influencer_id,
+        outreach_method: activityData.outreach_method,
+        ai_agent_name: activityData.ai_agent_name,
+        status: activityData.status,
+        notes_and_alerts: activityData.notes_and_alerts,
+        brand_id: brandData.brand_id,
+        initiated_at: new Date().toISOString(),
+        last_updated_status_at: new Date().toISOString()
+      };
+
+      console.log('Inserting outreach activity with data:', dbData);
 
       const { data, error } = await supabase
         .from('outreach_activities')
-        .insert([{
-          ...activityData,
-          brand_id: brandData.brand_id,
-          initiated_at: new Date().toISOString(),
-          last_updated_status_at: new Date().toISOString()
-        }])
+        .insert([dbData])
         .select()
         .single();
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Database insertion error:', error);
+        throw new Error(`Failed to create outreach activity: ${error.message}`);
+      }
+
+      console.log('Successfully created outreach activity:', data);
 
       // Automatically simulate call if it's a phone outreach
       if (data.outreach_method === 'phone' && activityData.influencerName && activityData.campaignName && activityData.brandName) {
         try {
+          console.log('Starting phone call simulation for outreach:', data.outreach_id);
           await simulatePhoneCall(
             data.outreach_id,
             activityData.influencerName,
             activityData.campaignName,
             activityData.brandName
           );
+          console.log('Phone call simulation completed successfully');
         } catch (error) {
           console.error('Failed to simulate call:', error);
           // Don't throw here as the outreach was created successfully
@@ -110,6 +134,9 @@ export const useOutreachActivities = (filters?: {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['outreachActivities'] });
       queryClient.invalidateQueries({ queryKey: ['communicationLogs'] });
+    },
+    onError: (error) => {
+      console.error('Outreach activity creation failed:', error);
     }
   });
 
@@ -140,6 +167,7 @@ export const useOutreachActivities = (filters?: {
     addOutreachActivity: addOutreachActivityMutation.mutate,
     isAddingOutreachActivity: addOutreachActivityMutation.isPending,
     updateOutreachActivity: updateOutreachActivityMutation.mutate,
-    isUpdatingOutreachActivity: updateOutreachActivityMutation.isPending
+    isUpdatingOutreachActivity: updateOutreachActivityMutation.isPending,
+    addOutreachActivityAsync: addOutreachActivityMutation.mutateAsync
   };
 };
