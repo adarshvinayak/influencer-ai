@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -18,7 +19,6 @@ import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,9 +52,8 @@ const App = () => {
                 <AppLayout />
               </ProtectedRoute>
             }>
-              <Route index element={<Dashboard />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="summary/:campaignId/:influencerId" element={<Summary />} />
+              <Route path="dashboard" element={<Summary />} />
+              <Route path="dashboard/:campaignId/:influencerId" element={<Summary />} />
               <Route path="campaigns" element={<MyCampaigns />} />
               <Route path="campaigns/create" element={<CreateCampaign />} />
               <Route path="influencers" element={<FindInfluencers />} />
