@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +9,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useUserBrand } from '@/hooks/useUserBrand';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { userBrand, isLoading, updateBrand, isUpdatingBrand } = useUserBrand();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -79,6 +81,24 @@ const Profile = () => {
     setError("");
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account.",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout failed",
+        description: "There was an error signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -109,14 +129,21 @@ const Profile = () => {
                   Manage your brand information and account settings
                 </CardDescription>
               </div>
-              {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline">
-                  Edit Profile
+              <div className="flex space-x-2">
+                {!isEditing && (
+                  <Button onClick={() => setIsEditing(true)} variant="outline">
+                    Edit Profile
+                  </Button>
+                )}
+                <Button onClick={handleLogout} variant="destructive" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
                 </Button>
-              )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
                 <Alert variant="destructive">

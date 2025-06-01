@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneCall, MessageSquare, Mail, Users, Bot, AlertTriangle, Info, CheckCircle, DollarSign, FileText, Target, Rocket, PartyPopper } from "lucide-react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useOutreachActivities } from "@/hooks/useOutreachActivities";
+import { useCommunicationLogs } from "@/hooks/useCommunicationLogs";
+import { useDealsContracts } from "@/hooks/useDealsContracts";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useInfluencers } from "@/hooks/useInfluencers";
 
 const Summary = () => {
   const { campaignId, influencerId } = useParams();
@@ -17,112 +23,80 @@ const Summary = () => {
     method: "all"
   });
 
+  // Fetch real data from database
+  const { outreachActivities, isLoading: isLoadingOutreach } = useOutreachActivities();
+  const { campaigns } = useCampaigns();
+  const { influencers } = useInfluencers({});
+
   // Check if we should show specific outreach details
   const shouldShowSpecificOutreach = campaignId && influencerId;
+  const specificOutreach = shouldShowSpecificOutreach 
+    ? outreachActivities?.find(item => 
+        item.campaign_id === campaignId && item.influencer_id === influencerId
+      )
+    : null;
 
-  // Mock outreach data
-  const mockOutreach = [
-    {
-      id: 1,
-      influencer: { name: "Priya Singh", handle: "@StyleWithPriya", pic: "/placeholder.svg" },
-      campaign: "Spring Fashion",
-      campaignId: "1",
-      influencerId: "2",
-      method: "email",
-      agent: "Eva (Chat/Email)",
-      status: "response-positive",
-      lastUpdated: "2 hours ago",
-      details: {
-        progress: ["AI Draft (GPT-4)", "Email Sent (SendGrid)", "Email Opened", "Replied"],
-        currentStep: 3,
-        log: [
-          { time: "2024-06-01 10:00", type: "system", message: "AI Eva (GPT-4) drafted personalized email for Spring Fashion campaign" },
-          { time: "2024-06-01 10:15", type: "system", message: "Email sent via SendGrid to priya.singh@email.com" },
-          { time: "2024-06-01 14:30", type: "system", message: "Email opened by recipient" },
-          { time: "2024-06-01 16:45", type: "influencer", message: "Hi! Love the campaign concept. I'm definitely interested. Can we discuss rates?" },
-        ]
-      }
-    },
-    {
-      id: 2,
-      influencer: { name: "Rohan Verma", handle: "@TechWithRohan", pic: "/placeholder.svg" },
-      campaign: "Tech Gadget Reviews",
-      campaignId: "2",
-      influencerId: "1",
-      method: "phone",
-      agent: "Sam (Voice)",
-      status: "negotiating",
-      lastUpdated: "1 day ago",
-      details: {
-        progress: ["AI Call Scheduled", "Call Completed", "Follow-up", "Negotiating"],
-        currentStep: 3,
-        log: [
-          { time: "2024-05-31 14:00", type: "system", message: "AI Sam scheduled call using ElevenLabs TTS & Whisper STT" },
-          { time: "2024-05-31 15:30", type: "system", message: "15-minute call completed. Transcript available." },
-          { time: "2024-05-31 15:45", type: "ai", message: "Sam (AI): Hi Rohan, thanks for taking the call. We'd love to collaborate on our Tech Gadget Reviews campaign..." },
-          { time: "2024-05-31 15:47", type: "influencer", message: "Rohan: Sounds interesting! What's the budget range you're looking at?" },
-        ]
-      }
-    },
-    {
-      id: 3,
-      influencer: { name: "Ananya Joshi", handle: "@AnanyaEats", pic: "/placeholder.svg" },
-      campaign: "Organic Food Fest",
-      campaignId: "3",
-      influencerId: "3",
-      method: "chat",
-      agent: "Eva (Chat/Email)",
-      status: "deal-finalized",
-      lastUpdated: "3 days ago",
-      details: {
-        progress: ["AI Outreach", "Positive Response", "Negotiation", "Deal Agreed", "Contract Sent", "Contract Signed", "Payment Processing"],
-        currentStep: 6,
-        log: [
-          { time: "2024-05-29 09:00", type: "system", message: "AI Eva initiated chat via WhatsApp (mock)" },
-          { time: "2024-05-29 11:30", type: "ai", message: "Eva (AI): Hi Ananya! We love your food content. Would you be interested in promoting our Organic Food Fest?" },
-          { time: "2024-05-29 12:00", type: "influencer", message: "Ananya: Absolutely! Organic food is my passion. What are the details?" },
-          { time: "2024-05-30 10:00", type: "system", message: "Deal finalized: 18k INR for 3 Instagram posts + 1 Reel" },
-          { time: "2024-05-30 14:00", type: "system", message: "Contract sent for e-signature via DocuSign" },
-          { time: "2024-05-30 16:30", type: "system", message: "Contract signed by both parties" },
-        ]
-      }
-    }
-  ];
+  // Use specific outreach communication logs if viewing specific outreach
+  const { communicationLogs } = useCommunicationLogs(specificOutreach?.outreach_id);
+  const { dealsContracts } = useDealsContracts();
 
-  // Filter outreach data if specific campaign/influencer is requested
-  const filteredOutreach = shouldShowSpecificOutreach 
-    ? mockOutreach.filter(item => item.campaignId === campaignId && item.influencerId === influencerId)
-    : mockOutreach;
+  // Helper functions
+  const getCampaignName = (campaignId: string) => {
+    return campaigns?.find(c => c.campaign_id === campaignId)?.campaign_name || 'Unknown Campaign';
+  };
+
+  const getInfluencerName = (influencerId: string) => {
+    return influencers?.find(i => i.influencer_id === influencerId)?.full_name || 'Unknown Influencer';
+  };
+
+  const getInfluencerHandle = (influencerId: string) => {
+    return influencers?.find(i => i.influencer_id === influencerId)?.username_handle || '@unknown';
+  };
+
+  // Filter outreach data
+  const filteredOutreach = shouldShowSpecificOutreach && specificOutreach
+    ? [specificOutreach]
+    : outreachActivities?.filter(item => {
+        if (filters.campaign !== "all" && item.campaign_id !== filters.campaign) return false;
+        if (filters.status !== "all") {
+          if (filters.status === "active" && !["AI Drafting", "AI Reaching Out", "Waiting for Response"].includes(item.status)) return false;
+          if (filters.status === "positive" && !["Response - Positive Interest", "Negotiating"].includes(item.status)) return false;
+          if (filters.status === "deals" && !["Deal Finalized", "Contract Signed"].includes(item.status)) return false;
+          if (filters.status === "issues" && !["Issue: AI Needs Human Help"].includes(item.status)) return false;
+        }
+        if (filters.method !== "all" && item.outreach_method !== filters.method) return false;
+        return true;
+      }) || [];
 
   // Categorize data for dashboard sections
-  const activeCampaigns = mockOutreach.filter(item => 
-    ["ai-drafting", "ai-reaching", "waiting-response", "response-positive", "negotiating"].includes(item.status)
-  );
+  const activeCampaigns = outreachActivities?.filter(item => 
+    ["AI Drafting", "AI Reaching Out", "Waiting for Response", "Response - Positive Interest", "Negotiating"].includes(item.status)
+  ) || [];
 
-  const attentionRequired = mockOutreach.filter(item => 
-    ["needs-help", "budget-exceeded"].includes(item.status)
-  );
+  const attentionRequired = outreachActivities?.filter(item => 
+    ["Issue: AI Needs Human Help"].includes(item.status)
+  ) || [];
 
-  const recentSuccesses = mockOutreach.filter(item => 
-    ["deal-finalized", "contract-signed", "payment-processed"].includes(item.status)
-  );
+  const recentSuccesses = outreachActivities?.filter(item => 
+    ["Deal Finalized", "Contract Signed"].includes(item.status)
+  ) || [];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      "ai-drafting": { color: "bg-blue-100 text-blue-800", text: "AI Drafting (GPT-4)" },
-      "ai-reaching": { color: "bg-blue-100 text-blue-800", text: "AI Reaching Out" },
-      "waiting-response": { color: "bg-yellow-100 text-yellow-800", text: "Waiting for Response" },
-      "response-positive": { color: "bg-green-100 text-green-800", text: "Response - Positive Interest" },
-      "negotiating": { color: "bg-orange-100 text-orange-800", text: "Negotiating (AI GPT-4)" },
-      "deal-finalized": { color: "bg-green-100 text-green-800", text: "Deal Finalized" },
-      "contract-sent": { color: "bg-green-100 text-green-800", text: "Contract Sent (E-Sign)" },
-      "contract-signed": { color: "bg-green-100 text-green-800", text: "Contract Signed" },
-      "payment-processed": { color: "bg-green-100 text-green-800", text: "Payment Processed" },
-      "not-interested": { color: "bg-red-100 text-red-800", text: "Response - Not Interested" },
-      "needs-help": { color: "bg-red-100 text-red-800", text: "Issue: AI Needs Human Help" }
+      "AI Drafting": { color: "bg-blue-100 text-blue-800", text: "AI Drafting (GPT-4)" },
+      "AI Reaching Out": { color: "bg-blue-100 text-blue-800", text: "AI Reaching Out" },
+      "Waiting for Response": { color: "bg-yellow-100 text-yellow-800", text: "Waiting for Response" },
+      "Response - Positive Interest": { color: "bg-green-100 text-green-800", text: "Response - Positive Interest" },
+      "Negotiating": { color: "bg-orange-100 text-orange-800", text: "Negotiating (AI GPT-4)" },
+      "Deal Finalized": { color: "bg-green-100 text-green-800", text: "Deal Finalized" },
+      "Contract Sent": { color: "bg-green-100 text-green-800", text: "Contract Sent (E-Sign)" },
+      "Contract Signed": { color: "bg-green-100 text-green-800", text: "Contract Signed" },
+      "Payment Processed": { color: "bg-green-100 text-green-800", text: "Payment Processed" },
+      "Response - Not Interested": { color: "bg-red-100 text-red-800", text: "Response - Not Interested" },
+      "Issue: AI Needs Human Help": { color: "bg-red-100 text-red-800", text: "Issue: AI Needs Human Help" }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["waiting-response"];
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["Waiting for Response"];
     return <Badge className={config.color}>{config.text}</Badge>;
   };
 
@@ -135,14 +109,29 @@ const Summary = () => {
     }
   };
 
+  if (isLoadingOutreach) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Campaign Dashboard & Outreach Summary</h1>
+          <p className="text-gray-600 mt-2">Loading outreach data...</p>
+        </div>
+        <div className="flex items-center justify-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   // If showing specific outreach, display detailed view immediately
-  if (shouldShowSpecificOutreach && filteredOutreach.length > 0) {
-    const specificOutreach = filteredOutreach[0];
+  if (shouldShowSpecificOutreach && specificOutreach) {
+    const deal = dealsContracts?.find(d => d.outreach_id === specificOutreach.outreach_id);
+    
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Outreach Progress: {specificOutreach.influencer.name} × {specificOutreach.campaign}
+            Outreach Progress: {getInfluencerName(specificOutreach.influencer_id)} × {getCampaignName(specificOutreach.campaign_id)}
           </h1>
           <p className="text-gray-600 mt-2">Detailed progress tracking for this specific outreach</p>
         </div>
@@ -155,9 +144,9 @@ const Summary = () => {
                   <Users className="h-8 w-8 text-gray-400" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{specificOutreach.influencer.name}</h2>
-                  <p className="text-gray-600">{specificOutreach.influencer.handle}</p>
-                  <p className="text-sm text-teal-600 font-medium">Campaign: {specificOutreach.campaign}</p>
+                  <h2 className="text-2xl font-bold">{getInfluencerName(specificOutreach.influencer_id)}</h2>
+                  <p className="text-gray-600">{getInfluencerHandle(specificOutreach.influencer_id)}</p>
+                  <p className="text-sm text-teal-600 font-medium">Campaign: {getCampaignName(specificOutreach.campaign_id)}</p>
                 </div>
               </div>
               {getStatusBadge(specificOutreach.status)}
@@ -172,59 +161,55 @@ const Summary = () => {
 
               <TabsContent value="progress" className="space-y-4 mt-6">
                 <div className="space-y-4">
-                  {specificOutreach.details.progress.map((step, index) => (
-                    <div key={index} className="flex items-center space-x-4">
-                      <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                        index < specificOutreach.details.currentStep 
-                          ? 'bg-green-500 text-white' 
-                          : index === specificOutreach.details.currentStep 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-gray-200 text-gray-400'
-                      }`}>
-                        {index < specificOutreach.details.currentStep ? (
-                          <CheckCircle className="h-4 w-4" />
-                        ) : (
-                          <span className="text-sm font-medium">{index + 1}</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-medium ${
-                          index <= specificOutreach.details.currentStep ? 'text-gray-900' : 'text-gray-400'
-                        }`}>
-                          {step}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="text-center py-8 text-gray-500">
+                    <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Current Status: {specificOutreach.status}</p>
+                    <p className="text-sm mt-2">Method: {specificOutreach.outreach_method}</p>
+                    {specificOutreach.ai_agent_name && (
+                      <p className="text-sm">AI Agent: {specificOutreach.ai_agent_name}</p>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="communication" className="space-y-4 mt-6">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {specificOutreach.details.log.map((entry, index) => (
-                    <div key={index} className="flex space-x-3">
-                      <div className="flex-shrink-0">
-                        {entry.type === 'system' && <Bot className="h-5 w-5 text-blue-500" />}
-                        {entry.type === 'ai' && <Bot className="h-5 w-5 text-purple-500" />}
-                        {entry.type === 'influencer' && <Users className="h-5 w-5 text-green-500" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="text-sm font-medium text-gray-900">
-                            {entry.type === 'system' ? 'System' : 
-                             entry.type === 'ai' ? 'AI Agent' : 'Influencer'}
-                          </span>
-                          <span className="text-xs text-gray-500">{entry.time}</span>
+                  {communicationLogs && communicationLogs.length > 0 ? (
+                    communicationLogs.map((log) => (
+                      <div key={log.log_id} className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          {log.direction === 'outbound' && <Bot className="h-5 w-5 text-blue-500" />}
+                          {log.direction === 'inbound' && <Users className="h-5 w-5 text-green-500" />}
                         </div>
-                        <p className="text-sm text-gray-600">{entry.message}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              {log.direction === 'outbound' ? 'AI Agent' : 'Influencer'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          {log.subject_or_summary && (
+                            <p className="text-sm font-medium text-gray-700">{log.subject_or_summary}</p>
+                          )}
+                          {log.content_transcript && (
+                            <p className="text-sm text-gray-600">{log.content_transcript}</p>
+                          )}
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>No communication logs available yet</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </TabsContent>
 
               <TabsContent value="contract" className="space-y-4 mt-6">
-                {specificOutreach.status === 'deal-finalized' ? (
+                {deal ? (
                   <div className="space-y-4">
                     <Card>
                       <CardHeader>
@@ -237,28 +222,31 @@ const Summary = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm text-gray-500">Agreed Rate</p>
-                            <p className="font-semibold">18,000 INR</p>
+                            <p className="font-semibold">{deal.agreed_rate_amount} {deal.agreed_rate_currency}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Deliverables</p>
-                            <p className="font-semibold">3 Instagram Posts + 1 Reel</p>
+                            <p className="font-semibold">{deal.agreed_deliverables}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Timeline</p>
-                            <p className="font-semibold">2 weeks</p>
+                            <p className="font-semibold">{deal.agreed_timeline || 'Not specified'}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Contract Status</p>
-                            <Badge className="bg-green-100 text-green-800">Signed</Badge>
+                            <Badge className="bg-green-100 text-green-800">{deal.e_signature_status}</Badge>
                           </div>
                         </div>
                         <div className="mt-4 pt-4 border-t">
-                          <Button variant="outline" className="mr-2">
-                            <FileText className="h-4 w-4 mr-2" />
-                            View Signed Contract
-                          </Button>
+                          {deal.contract_document_url && (
+                            <Button variant="outline" className="mr-2">
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Contract
+                            </Button>
+                          )}
                           <p className="text-xs text-gray-500 mt-2">
-                            E-signed via Influencer-AI E-Sign (DocuSign/Native). Audit trail available.
+                            {deal.e_signature_provider && `E-signed via ${deal.e_signature_provider}. `}
+                            Deal finalized on {new Date(deal.deal_finalized_at).toLocaleDateString()}
                           </p>
                         </div>
                       </CardContent>
@@ -302,8 +290,8 @@ const Summary = () => {
             <p className="text-sm text-gray-600">Influencers in active outreach</p>
             <div className="mt-4 space-y-2">
               {activeCampaigns.slice(0, 2).map((item) => (
-                <div key={item.id} className="text-xs p-2 bg-blue-50 rounded">
-                  <span className="font-medium">{item.campaign}</span> - {item.influencer.name}
+                <div key={item.outreach_id} className="text-xs p-2 bg-blue-50 rounded">
+                  <span className="font-medium">{getCampaignName(item.campaign_id)}</span> - {getInfluencerName(item.influencer_id)}
                 </div>
               ))}
             </div>
@@ -320,15 +308,14 @@ const Summary = () => {
             <CardDescription>Issues needing human intervention</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">2</div>
+            <div className="text-2xl font-bold text-orange-600">{attentionRequired.length}</div>
             <p className="text-sm text-gray-600">Items need your attention</p>
             <div className="mt-4 space-y-2">
-              <div className="text-xs p-2 bg-orange-50 rounded">
-                <span className="font-medium">Budget exceeded</span> - Tech Campaign
-              </div>
-              <div className="text-xs p-2 bg-orange-50 rounded">
-                <span className="font-medium">Legal question</span> - Fashion Campaign
-              </div>
+              {attentionRequired.slice(0, 2).map((item) => (
+                <div key={item.outreach_id} className="text-xs p-2 bg-orange-50 rounded">
+                  <span className="font-medium">{item.status}</span> - {getCampaignName(item.campaign_id)}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -347,8 +334,8 @@ const Summary = () => {
             <p className="text-sm text-gray-600">Deals finalized this week</p>
             <div className="mt-4 space-y-2">
               {recentSuccesses.slice(0, 2).map((item) => (
-                <div key={item.id} className="text-xs p-2 bg-green-50 rounded">
-                  <span className="font-medium">{item.campaign}</span> - {item.influencer.name}
+                <div key={item.outreach_id} className="text-xs p-2 bg-green-50 rounded">
+                  <span className="font-medium">{getCampaignName(item.campaign_id)}</span> - {getInfluencerName(item.influencer_id)}
                 </div>
               ))}
             </div>
@@ -366,9 +353,11 @@ const Summary = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Campaigns</SelectItem>
-                <SelectItem value="spring-fashion">Spring Fashion</SelectItem>
-                <SelectItem value="tech-reviews">Tech Gadget Reviews</SelectItem>
-                <SelectItem value="organic-food">Organic Food Fest</SelectItem>
+                {campaigns?.map((campaign) => (
+                  <SelectItem key={campaign.campaign_id} value={campaign.campaign_id}>
+                    {campaign.campaign_name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -398,8 +387,10 @@ const Summary = () => {
             </Select>
 
             <div className="flex space-x-2">
-              <Button>Apply Filters</Button>
-              <Button variant="outline">Clear</Button>
+              <Button onClick={() => {
+                // Filters are applied automatically via the filteredOutreach computation
+              }}>Apply Filters</Button>
+              <Button variant="outline" onClick={() => setFilters({ campaign: "all", status: "all", method: "all" })}>Clear</Button>
             </div>
           </div>
         </CardContent>
@@ -413,221 +404,92 @@ const Summary = () => {
         </CardHeader>
         <CardContent className="p-0">
           <div className="space-y-4 p-6">
-            {mockOutreach.map((outreach) => (
-              <Card key={outreach.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Users className="h-6 w-6 text-gray-400" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-2">
-                          <div>
-                            <h3 className="font-semibold text-gray-900">{outreach.influencer.name}</h3>
-                            <p className="text-sm text-gray-600">{outreach.influencer.handle}</p>
-                          </div>
-                          
-                          <div>
-                            <p className="font-medium text-blue-600">{outreach.campaign}</p>
-                            <div className="flex items-center space-x-2 text-sm text-gray-500">
-                              {getMethodIcon(outreach.method)}
-                              <span>{outreach.agent}</span>
-                            </div>
-                          </div>
+            {filteredOutreach.length > 0 ? (
+              filteredOutreach.map((outreach) => (
+                <Card key={outreach.outreach_id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
+                          <Users className="h-6 w-6 text-gray-400" />
                         </div>
                         
-                        <div className="flex items-center space-x-4">
-                          {getStatusBadge(outreach.status)}
-                          <span className="text-sm text-gray-500">Updated {outreach.lastUpdated}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-4 mb-2">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{getInfluencerName(outreach.influencer_id)}</h3>
+                              <p className="text-sm text-gray-600">{getInfluencerHandle(outreach.influencer_id)}</p>
+                            </div>
+                            
+                            <div>
+                              <p className="font-medium text-blue-600">{getCampaignName(outreach.campaign_id)}</p>
+                              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                {getMethodIcon(outreach.outreach_method)}
+                                <span>{outreach.ai_agent_name || 'AI Agent'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-4">
+                            {getStatusBadge(outreach.status)}
+                            <span className="text-sm text-gray-500">
+                              Updated {new Date(outreach.last_updated_status_at).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline">View Full Progress & Details</Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Progress: {outreach.influencer.name} for '{outreach.campaign}'</DialogTitle>
-                          <DialogDescription>
-                            Detailed outreach progress and communication log
-                          </DialogDescription>
-                        </DialogHeader>
+                      <div className="flex space-x-2">
+                        <Link to={`/app/dashboard/${outreach.campaign_id}/${outreach.influencer_id}`}>
+                          <Button variant="outline" size="sm">
+                            View Summary Page
+                          </Button>
+                        </Link>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline">View Full Progress & Details</Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Progress: {getInfluencerName(outreach.influencer_id)} for '{getCampaignName(outreach.campaign_id)}'</DialogTitle>
+                              <DialogDescription>
+                                Detailed outreach progress and communication log
+                              </DialogDescription>
+                            </DialogHeader>
 
-                        <Tabs defaultValue="progress" className="w-full">
-                          <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="progress">Progress Timeline</TabsTrigger>
-                            <TabsTrigger value="communication">Communication Log</TabsTrigger>
-                            <TabsTrigger value="contract">Contract & Payment</TabsTrigger>
-                          </TabsList>
-
-                          <TabsContent value="progress" className="space-y-4">
                             <div className="space-y-4">
-                              {outreach.details.progress.map((step, index) => (
-                                <div key={index} className="flex items-center space-x-4">
-                                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                                    index < outreach.details.currentStep 
-                                      ? 'bg-green-500 text-white' 
-                                      : index === outreach.details.currentStep 
-                                        ? 'bg-blue-500 text-white' 
-                                        : 'bg-gray-200 text-gray-400'
-                                  }`}>
-                                    {index < outreach.details.currentStep ? (
-                                      <CheckCircle className="h-4 w-4" />
-                                    ) : (
-                                      <span className="text-sm font-medium">{index + 1}</span>
-                                    )}
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className={`font-medium ${
-                                      index <= outreach.details.currentStep ? 'text-gray-900' : 'text-gray-400'
-                                    }`}>
-                                      {step}
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="communication" className="space-y-4">
-                            <div className="space-y-4 max-h-96 overflow-y-auto">
-                              {outreach.details.log.map((entry, index) => (
-                                <div key={index} className="flex space-x-3">
-                                  <div className="flex-shrink-0">
-                                    {entry.type === 'system' && <Bot className="h-5 w-5 text-blue-500" />}
-                                    {entry.type === 'ai' && <Bot className="h-5 w-5 text-purple-500" />}
-                                    {entry.type === 'influencer' && <Users className="h-5 w-5 text-green-500" />}
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-1">
-                                      <span className="text-sm font-medium text-gray-900">
-                                        {entry.type === 'system' ? 'System' : 
-                                         entry.type === 'ai' ? 'AI Agent' : 'Influencer'}
-                                      </span>
-                                      <span className="text-xs text-gray-500">{entry.time}</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600">{entry.message}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </TabsContent>
-
-                          <TabsContent value="contract" className="space-y-4">
-                            {outreach.status === 'deal-finalized' ? (
-                              <div className="space-y-4">
-                                <Card>
-                                  <CardHeader>
-                                    <CardTitle className="flex items-center">
-                                      <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-                                      Deal Confirmed!
-                                    </CardTitle>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <p className="text-sm text-gray-500">Agreed Rate</p>
-                                        <p className="font-semibold">18,000 INR</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">Deliverables</p>
-                                        <p className="font-semibold">3 Instagram Posts + 1 Reel</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">Timeline</p>
-                                        <p className="font-semibold">2 weeks</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">Contract Status</p>
-                                        <Badge className="bg-green-100 text-green-800">Signed</Badge>
-                                      </div>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t">
-                                      <Button variant="outline" className="mr-2">
-                                        <FileText className="h-4 w-4 mr-2" />
-                                        View Signed Contract
-                                      </Button>
-                                      <p className="text-xs text-gray-500 mt-2">
-                                        E-signed via Influencer-AI E-Sign (DocuSign/Native). Audit trail available.
-                                      </p>
-                                    </div>
-                                  </CardContent>
-                                </Card>
+                              <div className="p-4 bg-gray-50 rounded-lg">
+                                <h4 className="font-medium mb-2">Current Status</h4>
+                                <p className="text-sm text-gray-600">
+                                  Status: {outreach.status} | Method: {outreach.outreach_method} | Agent: {outreach.ai_agent_name || 'AI Agent'}
+                                </p>
+                                {outreach.notes_and_alerts && (
+                                  <p className="text-sm text-gray-600 mt-2">Notes: {outreach.notes_and_alerts}</p>
+                                )}
                               </div>
-                            ) : (
-                              <div className="text-center py-8 text-gray-500">
-                                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                                <p>Contract details will appear here once deal is finalized</p>
+                              
+                              <div className="flex justify-center">
+                                <Link to={`/app/dashboard/${outreach.campaign_id}/${outreach.influencer_id}`}>
+                                  <Button className="bg-teal-500 hover:bg-teal-600">
+                                    Open Dedicated Summary Page
+                                  </Button>
+                                </Link>
                               </div>
-                            )}
-                          </TabsContent>
-                        </Tabs>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Alerts Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <AlertTriangle className="h-5 w-5 mr-2 text-orange-500" />
-            Action Required & Alerts
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-medium text-red-800">Critical: Budget Exceeded</h4>
-                <p className="text-sm text-red-700 mt-1">
-                  Influencer Vikram's quote (25k INR) &gt; budget (20k INR). AI GPT-4 negotiation failed. Human intervention strongly recommended.
-                </p>
-                <div className="flex space-x-2 mt-3">
-                  <Button size="sm" variant="outline">Override Budget (mock)</Button>
-                  <Button size="sm" variant="outline">Assign Human (mock)</Button>
-                  <Button size="sm" variant="outline">Mark Lost</Button>
-                </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No outreach activities found</h3>
+                <p className="text-gray-600">Start creating campaigns and initiating outreach to see activity here.</p>
               </div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-start space-x-3">
-              <Info className="h-5 w-5 text-yellow-500 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-medium text-yellow-800">Attention: Legal Questions</h4>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Influencer Priya asked legal questions AI Sam can't answer. Human follow-up needed.
-                </p>
-                <div className="flex space-x-2 mt-3">
-                  <Button size="sm" variant="outline">View Question</Button>
-                  <Button size="sm" variant="outline">Mark Resolved</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start space-x-3">
-              <Info className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-medium text-blue-800">Info: Scheduled Follow-up</h4>
-                <p className="text-sm text-blue-700 mt-1">
-                  AI Eva scheduled follow-up call with Ananya for June 5th, 2:00 PM.
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>

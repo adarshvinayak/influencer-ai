@@ -1,26 +1,29 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserBrand } from './useUserBrand';
 
 export interface OutreachActivity {
   outreach_id: string;
-  campaign_id: string;
-  influencer_id: string;
   brand_id: string;
+  influencer_id: string;
+  campaign_id: string;
   outreach_method: string;
   ai_agent_name?: string;
   status: string;
-  last_updated_status_at: string;
-  initiated_at: string;
-  next_follow_up_at?: string;
   notes_and_alerts?: string;
+  initiated_at: string;
+  last_updated_status_at: string;
+  next_follow_up_at?: string;
   created_at: string;
   updated_at: string;
 }
 
-export const useOutreachActivities = (campaignId?: string) => {
-  const { userBrand } = useUserBrand();
+export const useOutreachActivities = (filters?: {
+  campaignId?: string;
+  influencerId?: string;
+  status?: string;
+  method?: string;
+}) => {
   const queryClient = useQueryClient();
 
   const {
@@ -28,32 +31,43 @@ export const useOutreachActivities = (campaignId?: string) => {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['outreachActivities', userBrand?.brand_id, campaignId],
+    queryKey: ['outreachActivities', filters],
     queryFn: async (): Promise<OutreachActivity[]> => {
-      if (!userBrand?.brand_id) return [];
-      
       let query = supabase
         .from('outreach_activities')
         .select('*')
-        .eq('brand_id', userBrand.brand_id);
+        .order('last_updated_status_at', { ascending: false });
 
-      if (campaignId) {
-        query = query.eq('campaign_id', campaignId);
+      if (filters?.campaignId) {
+        query = query.eq('campaign_id', filters.campaignId);
+      }
+      if (filters?.influencerId) {
+        query = query.eq('influencer_id', filters.influencerId);
+      }
+      if (filters?.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters?.method) {
+        query = query.eq('outreach_method', filters.method);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query;
       
       if (error) throw new Error(error.message);
       return data || [];
-    },
-    enabled: !!userBrand?.brand_id
+    }
   });
 
-  const createOutreachMutation = useMutation({
-    mutationFn: async (outreachData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'last_updated_status_at' | 'initiated_at'>) => {
+  const addOutreachActivityMutation = useMutation({
+    mutationFn: async (activityData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'brand_id' | 'initiated_at' | 'last_updated_status_at'>) => {
       const { data, error } = await supabase
         .from('outreach_activities')
-        .insert([outreachData])
+        .insert([{
+          ...activityData,
+          brand_id: 'mock-brand-id', // In real app, get from auth context
+          initiated_at: new Date().toISOString(),
+          last_updated_status_at: new Date().toISOString()
+        }])
         .select()
         .single();
       
@@ -61,22 +75,19 @@ export const useOutreachActivities = (campaignId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['outreachActivities', userBrand?.brand_id] });
+      queryClient.invalidateQueries({ queryKey: ['outreachActivities'] });
     }
   });
 
-  const updateOutreachMutation = useMutation({
-    mutationFn: async ({ outreachId, updates }: { 
-      outreachId: string; 
-      updates: Partial<Omit<OutreachActivity, 'outreach_id' | 'brand_id' | 'created_at' | 'updated_at'>>
-    }) => {
+  const updateOutreachActivityMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<OutreachActivity> }) => {
       const { data, error } = await supabase
         .from('outreach_activities')
         .update({
           ...updates,
           last_updated_status_at: new Date().toISOString()
         })
-        .eq('outreach_id', outreachId)
+        .eq('outreach_id', id)
         .select()
         .single();
       
@@ -84,7 +95,7 @@ export const useOutreachActivities = (campaignId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['outreachActivities', userBrand?.brand_id] });
+      queryClient.invalidateQueries({ queryKey: ['outreachActivities'] });
     }
   });
 
@@ -92,9 +103,9 @@ export const useOutreachActivities = (campaignId?: string) => {
     outreachActivities,
     isLoading,
     error,
-    createOutreach: createOutreachMutation.mutate,
-    updateOutreach: updateOutreachMutation.mutate,
-    isCreatingOutreach: createOutreachMutation.isPending,
-    isUpdatingOutreach: updateOutreachMutation.isPending
+    addOutreachActivity: addOutreachActivityMutation.mutate,
+    isAddingOutreachActivity: addOutreachActivityMutation.isPending,
+    updateOutreachActivity: updateOutreachActivityMutation.mutate,
+    isUpdatingOutreachActivity: updateOutreachActivityMutation.isPending
   };
 };

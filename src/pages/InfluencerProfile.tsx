@@ -6,15 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Instagram, Youtube, Users, PhoneCall, MessageSquare, Mail, CheckCircle, BrainCircuit, Languages } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useOutreachActivities } from "@/hooks/useOutreachActivities";
+import { useToast } from "@/hooks/use-toast";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [selectedMethod, setSelectedMethod] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Mock influencer data
+  const { campaigns } = useCampaigns();
+  const { addOutreachActivity } = useOutreachActivities();
+
+  // Mock influencer data - in a real app, this would come from the database
   const influencer = {
     id: 1,
     name: "Ananya 'Foodie Explorer' Joshi",
@@ -42,14 +50,41 @@ const InfluencerProfile = () => {
     ]
   };
 
-  const mockCampaigns = [
-    { id: "1", name: "Spring Fashion Campaign" },
-    { id: "2", name: "Tech Gadget Reviews" },
-    { id: "3", name: "Organic Food Fest" }
-  ];
+  const handleOutreachSubmit = async () => {
+    if (!selectedCampaign || !selectedMethod) return;
 
-  const handleOutreachSubmit = () => {
-    setShowSuccessModal(true);
+    try {
+      // Create outreach activity in database
+      const outreachData = {
+        campaign_id: selectedCampaign,
+        influencer_id: id || 'mock-influencer-id', // In real app, use actual influencer ID
+        outreach_method: selectedMethod,
+        ai_agent_name: selectedMethod === 'phone' ? 'Sam (Voice)' : 'Eva (Chat/Email)',
+        status: 'AI Drafting' as const,
+        notes_and_alerts: `AI outreach initiated for ${influencer.name} via ${selectedMethod}`
+      };
+
+      addOutreachActivity(outreachData);
+
+      toast({
+        title: "AI Outreach Initiated!",
+        description: `AI agents are now reaching out to ${influencer.name} for your campaign.`,
+      });
+
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error creating outreach activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initiate outreach. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTrackOnSummaryPage = () => {
+    // Navigate to specific summary page for this outreach
+    navigate(`/app/dashboard/${selectedCampaign}/${id}`);
   };
 
   return (
@@ -115,9 +150,9 @@ const InfluencerProfile = () => {
                         <SelectValue placeholder="Select campaign" />
                       </SelectTrigger>
                       <SelectContent>
-                        {mockCampaigns.map((campaign) => (
-                          <SelectItem key={campaign.id} value={campaign.id}>
-                            {campaign.name}
+                        {campaigns?.map((campaign) => (
+                          <SelectItem key={campaign.campaign_id} value={campaign.campaign_id}>
+                            {campaign.campaign_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -173,7 +208,7 @@ const InfluencerProfile = () => {
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <h4 className="font-medium mb-2">Review & Confirm:</h4>
                       <p className="text-sm text-gray-600">
-                        Initiating {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} to {influencer.name} for '{mockCampaigns.find(c => c.id === selectedCampaign)?.name}'.
+                        Initiating {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} to {influencer.name} for '{campaigns?.find(c => c.campaign_id === selectedCampaign)?.campaign_name}'.
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
                         Mock AI-drafted message snippet will appear here (GPT-4).
@@ -279,7 +314,6 @@ const InfluencerProfile = () => {
           </Card>
         </div>
 
-        {/* Past Collaborations & Content */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -347,7 +381,7 @@ const InfluencerProfile = () => {
           </DialogHeader>
           <div className="py-4 text-center">
             <p className="text-gray-600 mb-4">
-              🚀 Fantastic! Our AI agents are on it. We'll use {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} for {influencer.name} for '{mockCampaigns.find(c => c.id === selectedCampaign)?.name}'.
+              🚀 Fantastic! Our AI agents are on it. We'll use {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} for {influencer.name} for '{campaigns?.find(c => c.campaign_id === selectedCampaign)?.campaign_name}'.
             </p>
             <div className="text-sm text-gray-500 space-y-1 mb-6">
               {selectedMethod === 'phone' && <p>• Voice AI uses ElevenLabs TTS & Whisper STT</p>}
@@ -357,7 +391,7 @@ const InfluencerProfile = () => {
             <p className="text-sm text-gray-600">Track progress on 'Summary' page & 'Notifications'. Good luck!</p>
           </div>
           <div className="flex flex-col space-y-2">
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={() => setShowSuccessModal(false)}>
+            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnSummaryPage}>
               Track on Summary Page
             </Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>

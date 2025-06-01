@@ -53,6 +53,7 @@ const App = () => {
               </ProtectedRoute>
             }>
               <Route path="dashboard" element={<Summary />} />
+              <Route path="dashboard/:campaignId/:influencerId" element={<Summary />} />
               <Route path="campaigns" element={<MyCampaigns />} />
               <Route path="campaigns/create" element={<CreateCampaign />} />
               <Route path="influencers" element={<FindInfluencers />} />
