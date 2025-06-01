@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import Index from "./pages/Index";
 import Signup from "./pages/Signup";
@@ -53,6 +53,7 @@ const App = () => {
                 <AppLayout />
               </ProtectedRoute>
             }>
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Summary />} />
               <Route path="dashboard/:campaignId/:influencerId" element={<Summary />} />
               <Route path="campaigns" element={<MyCampaigns />} />

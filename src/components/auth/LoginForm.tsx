@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -40,7 +39,7 @@ const LoginForm = () => {
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
-        navigate('/app');
+        navigate('/app/dashboard');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
