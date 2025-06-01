@@ -187,7 +187,7 @@ const Signup = () => {
 
                   {/* Contact Information */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900">User Information</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
                     
                     <div>
                       <Label htmlFor="contactName">Person Name *</Label>
