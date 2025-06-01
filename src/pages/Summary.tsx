@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +37,7 @@ const Summary = () => {
 
   // Use specific outreach communication logs if viewing specific outreach
   const { communicationLogs } = useCommunicationLogs(specificOutreach?.outreach_id);
-  const { dealsContracts } = useDealsContracts();
+  const { deals } = useDealsContracts();
 
   // Helper functions
   const getCampaignName = (campaignId: string) => {
@@ -125,7 +124,7 @@ const Summary = () => {
 
   // If showing specific outreach, display detailed view immediately
   if (shouldShowSpecificOutreach && specificOutreach) {
-    const deal = dealsContracts?.find(d => d.outreach_id === specificOutreach.outreach_id);
+    const deal = deals?.find(d => d.outreach_id === specificOutreach.outreach_id);
     
     return (
       <div className="space-y-6">
