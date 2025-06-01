@@ -13,11 +13,12 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useCampaigns } from "@/hooks/useCampaigns";
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { createCampaign, isCreatingCampaign } = useCampaigns();
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [dateErrors, setDateErrors] = useState({
@@ -66,14 +67,12 @@ const CreateCampaign = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Validate start date
     if (newStartDate) {
       if (newStartDate <= today) {
         errors.startDate = "Start date must be in the future";
       }
     }
 
-    // Validate end date
     if (newEndDate && newStartDate) {
       if (newEndDate < newStartDate) {
         errors.endDate = "End date cannot be before the start date";
@@ -132,10 +131,29 @@ const CreateCampaign = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation
     if (formData.brief.length < 100) {
       toast({
         title: "Brief too short",
         description: "Please provide at least 100 characters for better AI matching.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.platforms.length === 0) {
+      toast({
+        title: "Platform required",
+        description: "Please select at least one platform.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.targetAllIndia && formData.targetLocations.length === 0) {
+      toast({
+        title: "Location required",
+        description: "Please select target locations or choose 'All India'.",
         variant: "destructive"
       });
       return;
@@ -152,30 +170,39 @@ const CreateCampaign = () => {
       return;
     }
 
-    setIsLoading(true);
-    
-    // Mock campaign creation with navigation to My Campaigns
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Create new campaign object to pass to My Campaigns
-      const newCampaign = {
-        name: formData.campaignName,
+    try {
+      // Prepare campaign data for Supabase
+      const campaignData = {
+        campaign_name: formData.campaignName,
         niche: formData.niche,
-        platforms: formData.platforms,
-        description: formData.brief,
-        budget: formData.budget ? `₹${formData.budget}` : "Not set",
-        targetLocation: formData.targetAllIndia ? "All India" : formData.targetLocations.join(", ")
+        desired_platforms: formData.platforms,
+        target_locations_india: formData.targetAllIndia ? ["All India"] : formData.targetLocations,
+        content_types: formData.contentFormats,
+        description_brief: formData.brief,
+        budget_amount: formData.budget ? parseFloat(formData.budget) : undefined,
+        budget_currency: 'INR',
+        start_date: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+        end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
+        status: 'Planning Phase'
       };
+
+      createCampaign(campaignData);
       
       toast({
         title: "Campaign Created!",
-        description: "Your campaign has been created and AI is analyzing for matches."
+        description: "Your campaign has been created successfully."
       });
       
-      // Navigate to My Campaigns with the new campaign data
-      navigate("/app/campaigns", { state: { newCampaign } });
-    }, 2000);
+      // Navigate to campaigns page
+      navigate("/app/campaigns");
+    } catch (error) {
+      console.error('Error creating campaign:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create campaign. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -426,9 +453,9 @@ const CreateCampaign = () => {
           <Button 
             type="submit" 
             className="bg-teal-500 hover:bg-teal-600"
-            disabled={isLoading}
+            disabled={isCreatingCampaign}
           >
-            {isLoading ? "Creating Campaign..." : "Save Campaign & Find Influencers"}
+            {isCreatingCampaign ? "Creating Campaign..." : "Save Campaign & Find Influencers"}
           </Button>
         </div>
       </form>
