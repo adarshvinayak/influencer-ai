@@ -203,7 +203,7 @@ const Summary = () => {
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Progress: {outreach.influencer.name} for '{outreach.campaign}'</DialogTitle>
+                      <DialogTitle>Progress: {outreach.influencer.name} for &apos;{outreach.campaign}&apos;</DialogTitle>
                       <DialogDescription>
                         Detailed outreach progress and communication log
                       </DialogDescription>
@@ -341,7 +341,7 @@ const Summary = () => {
               <div className="flex-1">
                 <h4 className="font-medium text-red-800">Critical: Budget Exceeded</h4>
                 <p className="text-sm text-red-700 mt-1">
-                  Influencer Vikram's quote (25k INR) > budget (20k INR). AI GPT-4 negotiation failed. Human intervention strongly recommended.
+                  Influencer Vikram&apos;s quote (25k INR) &gt; budget (20k INR). AI GPT-4 negotiation failed. Human intervention strongly recommended.
                 </p>
                 <div className="flex space-x-2 mt-3">
                   <Button size="sm" variant="outline">Override Budget (mock)</Button>
@@ -358,7 +358,7 @@ const Summary = () => {
               <div className="flex-1">
                 <h4 className="font-medium text-yellow-800">Attention: Legal Questions</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Influencer Priya asked legal questions AI Sam can't answer. Human follow-up needed.
+                  Influencer Priya asked legal questions AI Sam can&apos;t answer. Human follow-up needed.
                 </p>
                 <div className="flex space-x-2 mt-3">
                   <Button size="sm" variant="outline">View Question</Button>
