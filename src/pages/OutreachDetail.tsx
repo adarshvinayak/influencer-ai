@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +22,7 @@ const OutreachDetail = () => {
   const { outreachActivities, isLoading: isLoadingOutreach } = useOutreachActivities();
   const { campaigns } = useCampaigns();
   const { influencers } = useInfluencers({});
-  const { brand } = useUserBrand();
+  const { userBrand } = useUserBrand();
   const outreach = outreachActivities?.find(item => item.outreach_id === outreachId);
   const { communicationLogs } = useCommunicationLogs(outreachId);
 
@@ -31,7 +30,7 @@ const OutreachDetail = () => {
   const influencer = influencers?.find(i => i.influencer_id === outreach?.influencer_id);
 
   const generateAIScript = async () => {
-    if (!outreach || !campaign || !influencer || !brand) {
+    if (!outreach || !campaign || !influencer || !userBrand) {
       toast({
         title: "Missing Data",
         description: "Unable to generate script due to missing information.",
@@ -46,15 +45,15 @@ const OutreachDetail = () => {
       const prompt = `Create a professional ${outreach.outreach_method} script for an AI agent reaching out to an influencer.
 
 Brand Details:
-- Brand Name: ${brand.brand_name}
-- Brand Description: ${brand.brand_description || 'Professional brand'}
-- Brand Niche: ${brand.brand_niche || 'General'}
+- Brand Name: ${userBrand.brand_name}
+- Brand Description: ${userBrand.description || 'Professional brand'}
+- Brand Industry: ${userBrand.industry || 'General'}
 
 Campaign Details:
 - Campaign Name: ${campaign.campaign_name}
-- Description: ${campaign.description || 'Exciting collaboration opportunity'}
-- Target Platforms: ${campaign.target_platforms?.join(', ') || 'Social Media'}
-- Target Location: ${campaign.target_location || 'Various locations'}
+- Description: ${campaign.description_brief || 'Exciting collaboration opportunity'}
+- Target Platforms: ${campaign.desired_platforms?.join(', ') || 'Social Media'}
+- Target Location: ${campaign.target_locations_india?.join(', ') || 'Various locations'}
 - Budget: ${campaign.budget_amount ? `${campaign.budget_currency} ${campaign.budget_amount}` : 'Competitive budget'}
 - Campaign Dates: ${campaign.start_date} to ${campaign.end_date}
 
@@ -67,7 +66,7 @@ Influencer Details:
 Outreach Method: ${outreach.outreach_method}
 
 ${outreach.outreach_method === 'phone' ? 
-  `Format the response as a call script starting with: "You are ${outreach.ai_agent_name || 'Sam'}, a friendly and professional AI voice agent from ${brand.brand_name}. Your primary goal is to speak to ${influencer.full_name} about the ${campaign.campaign_name} campaign..."` :
+  `Format the response as a call script starting with: "You are ${outreach.ai_agent_name || 'Sam'}, a friendly and professional AI voice agent from ${userBrand.brand_name}. Your primary goal is to speak to ${influencer.full_name} about the ${campaign.campaign_name} campaign..."` :
   outreach.outreach_method === 'email' ?
   `Format the response as an email with subject line and professional body content.` :
   `Format the response as a chat message script that's conversational and engaging.`
@@ -81,31 +80,31 @@ Make it personalized, professional, and compelling. Include specific details abo
       
       // Mock response for now - replace with actual API call
       const mockScript = outreach.outreach_method === 'phone' ? 
-        `You are ${outreach.ai_agent_name || 'Sam'}, a friendly and professional AI voice agent from ${brand.brand_name}. Your primary goal is to speak to ${influencer.full_name} about the ${campaign.campaign_name} campaign.
+        `You are ${outreach.ai_agent_name || 'Sam'}, a friendly and professional AI voice agent from ${userBrand.brand_name}. Your primary goal is to speak to ${influencer.full_name} about the ${campaign.campaign_name} campaign.
 
-Hello ${influencer.full_name}! I hope you're having a great day. I'm calling from ${brand.brand_name} because we've been following your amazing work in ${influencer.primary_niches?.join(' and ') || 'content creation'}.
+Hello ${influencer.full_name}! I hope you're having a great day. I'm calling from ${userBrand.brand_name} because we've been following your amazing work in ${influencer.primary_niches?.join(' and ') || 'content creation'}.
 
-We have an exciting collaboration opportunity with our ${campaign.campaign_name} campaign that I think would be perfect for your audience. The campaign focuses on ${campaign.description} and we're specifically looking for creators in ${campaign.target_location}.
+We have an exciting collaboration opportunity with our ${campaign.campaign_name} campaign that I think would be perfect for your audience. The campaign focuses on ${campaign.description_brief} and we're specifically looking for creators in ${campaign.target_locations_india?.join(', ')}.
 
 Would you be interested in hearing more about this partnership opportunity?` :
         `Subject: Exciting Collaboration Opportunity - ${campaign.campaign_name}
 
 Dear ${influencer.full_name},
 
-I hope this email finds you well! I'm reaching out from ${brand.brand_name} because we've been impressed by your content in the ${influencer.primary_niches?.join(' and ') || 'content creation'} space.
+I hope this email finds you well! I'm reaching out from ${userBrand.brand_name} because we've been impressed by your content in the ${influencer.primary_niches?.join(' and ') || 'content creation'} space.
 
 We're launching our ${campaign.campaign_name} campaign and believe your authentic voice and engaged audience would be a perfect fit for this collaboration.
 
 Campaign Overview:
-- ${campaign.description}
-- Target Platforms: ${campaign.target_platforms?.join(', ') || 'Social Media'}
+- ${campaign.description_brief}
+- Target Platforms: ${campaign.desired_platforms?.join(', ') || 'Social Media'}
 - Timeline: ${campaign.start_date} to ${campaign.end_date}
 - Competitive compensation package
 
 We'd love to discuss this opportunity further. Are you available for a brief call this week?
 
 Best regards,
-${brand.brand_name} Team`;
+${userBrand.brand_name} Team`;
 
       setAiScript(mockScript);
       toast({
@@ -208,7 +207,7 @@ ${brand.brand_name} Team`;
             <div>
               <h4 className="font-medium mb-2">Campaign</h4>
               <p className="text-sm text-gray-600">{campaign?.campaign_name}</p>
-              <p className="text-sm text-gray-500">{campaign?.target_platforms?.join(', ')}</p>
+              <p className="text-sm text-gray-500">{campaign?.desired_platforms?.join(', ')}</p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Current Status</h4>
@@ -371,11 +370,11 @@ ${brand.brand_name} Team`;
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-gray-900">{campaign?.description}</p>
+                  <p className="text-gray-900">{campaign?.description_brief}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Target Platforms</label>
-                  <p className="text-gray-900">{campaign?.target_platforms?.join(', ')}</p>
+                  <p className="text-gray-900">{campaign?.desired_platforms?.join(', ')}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Budget</label>
