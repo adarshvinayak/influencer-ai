@@ -59,12 +59,24 @@ export const useOutreachActivities = (filters?: {
   });
 
   const addOutreachActivityMutation = useMutation({
-    mutationFn: async (activityData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'brand_id' | 'initiated_at' | 'last_updated_status_at'>) => {
+    mutationFn: async (activityData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'initiated_at' | 'last_updated_status_at'>) => {
+      // Get the current user's brand_id from the brands table
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+      
+      const { data: brandData, error: brandError } = await supabase
+        .from('brands')
+        .select('brand_id')
+        .eq('auth_user_id', user.id)
+        .single();
+      
+      if (brandError || !brandData) throw new Error('Brand not found');
+
       const { data, error } = await supabase
         .from('outreach_activities')
         .insert([{
           ...activityData,
-          brand_id: 'mock-brand-id', // In real app, get from auth context
+          brand_id: brandData.brand_id,
           initiated_at: new Date().toISOString(),
           last_updated_status_at: new Date().toISOString()
         }])

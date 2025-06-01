@@ -27,6 +27,13 @@ export const useCommunicationLogs = (outreachId?: string) => {
     queryFn: async (): Promise<CommunicationLog[]> => {
       if (!outreachId) return [];
       
+      // Validate that outreachId is a valid UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(outreachId)) {
+        console.warn('Invalid UUID format for outreachId:', outreachId);
+        return [];
+      }
+      
       const { data, error } = await supabase
         .from('communication_logs')
         .select('*')
