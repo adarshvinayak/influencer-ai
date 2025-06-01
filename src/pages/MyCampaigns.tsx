@@ -1,24 +1,49 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, MoreVertical, Instagram, Youtube, MapPin, Calendar, Users, Target, FolderPlus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import CampaignDetailModal from "@/components/CampaignDetailModal";
+
+interface Campaign {
+  id: string;
+  name: string;
+  niche: string;
+  platforms: string[];
+  status: string;
+  previousStatus?: string; // For pause/resume functionality
+  stats: {
+    contacted: number;
+    negotiations: number;
+    deals: number;
+    duration: string;
+  };
+  budget: string;
+  description: string;
+  targetLocation: string;
+  isUserCreated?: boolean; // To track dynamically added campaigns
+}
 
 const MyCampaigns = () => {
+  const { toast } = useToast();
+  const location = useLocation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Mock campaigns data
-  const campaigns = [
+  // Initial mock campaigns data with previousStatus support
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
       id: "1",
       name: "Spring Fashion Campaign",
       niche: "Fashion",
-      platforms: ["instagram", "youtube"],
+      platforms: ["Instagram", "YouTube"],
       status: "active-outreach",
       stats: {
         contacted: 25,
@@ -34,7 +59,7 @@ const MyCampaigns = () => {
       id: "2",
       name: "Tech Gadget Reviews",
       niche: "Technology",
-      platforms: ["youtube", "instagram"],
+      platforms: ["YouTube", "Instagram"],
       status: "active-issues",
       stats: {
         contacted: 15,
@@ -50,7 +75,7 @@ const MyCampaigns = () => {
       id: "3",
       name: "Organic Food Fest",
       niche: "Food & Beverage",
-      platforms: ["instagram"],
+      platforms: ["Instagram"],
       status: "completed",
       stats: {
         contacted: 20,
@@ -66,7 +91,7 @@ const MyCampaigns = () => {
       id: "4",
       name: "Fitness Challenge Draft",
       niche: "Health & Fitness",
-      platforms: ["instagram", "youtube"],
+      platforms: ["Instagram", "YouTube"],
       status: "planning",
       stats: {
         contacted: 0,
@@ -78,11 +103,39 @@ const MyCampaigns = () => {
       description: "Draft campaign for fitness challenge promotion",
       targetLocation: "All India"
     }
-  ];
+  ]);
+
+  // Check for new campaigns from navigation state
+  useEffect(() => {
+    if (location.state?.newCampaign) {
+      const newCampaign: Campaign = {
+        ...location.state.newCampaign,
+        id: Date.now().toString(),
+        status: "planning", // Default status for new campaigns
+        isUserCreated: true,
+        stats: {
+          contacted: 0,
+          negotiations: 0,
+          deals: 0,
+          duration: "Not set"
+        }
+      };
+
+      setCampaigns(prev => [newCampaign, ...prev]);
+      
+      toast({
+        title: "Campaign Created!",
+        description: `"${newCampaign.name}" has been added to your campaigns.`
+      });
+
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, toast]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      "planning": { color: "bg-blue-100 text-blue-800", text: "Planning" },
+      "planning": { color: "bg-blue-100 text-blue-800", text: "Planning Phase" },
       "active-outreach": { color: "bg-green-100 text-green-800", text: "Active - Outreach" },
       "active-issues": { color: "bg-yellow-100 text-yellow-800", text: "Active - Issues" },
       "paused": { color: "bg-gray-100 text-gray-800", text: "Paused" },
@@ -96,13 +149,60 @@ const MyCampaigns = () => {
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case "instagram":
+      case "Instagram":
         return <Instagram className="h-4 w-4 text-pink-500" />;
-      case "youtube":
+      case "YouTube":
         return <Youtube className="h-4 w-4 text-red-500" />;
       default:
         return <Target className="h-4 w-4 text-gray-500" />;
     }
+  };
+
+  const handlePauseCampaign = (campaignId: string) => {
+    setCampaigns(prev => prev.map(campaign => 
+      campaign.id === campaignId 
+        ? { 
+            ...campaign, 
+            previousStatus: campaign.status, // Store current status
+            status: "paused" 
+          }
+        : campaign
+    ));
+    
+    toast({
+      title: "Campaign Paused",
+      description: "The campaign has been paused and can be resumed later."
+    });
+  };
+
+  const handleResumeCampaign = (campaignId: string) => {
+    setCampaigns(prev => prev.map(campaign => 
+      campaign.id === campaignId 
+        ? { 
+            ...campaign, 
+            status: campaign.previousStatus || "active-outreach", // Restore previous status
+            previousStatus: undefined 
+          }
+        : campaign
+    ));
+    
+    toast({
+      title: "Campaign Resumed",
+      description: "The campaign has been resumed and is now active."
+    });
+  };
+
+  const handleArchiveCampaign = (campaignId: string) => {
+    setCampaigns(prev => prev.map(campaign => 
+      campaign.id === campaignId 
+        ? { ...campaign, status: "archived" }
+        : campaign
+    ));
+    
+    toast({
+      title: "Campaign Archived",
+      description: "The campaign has been moved to archived status."
+    });
   };
 
   const handleDeleteCampaign = (campaignId: string) => {
@@ -111,10 +211,39 @@ const MyCampaigns = () => {
   };
 
   const confirmDelete = () => {
-    // Mock delete action
-    console.log("Deleting campaign:", campaignToDelete);
+    if (campaignToDelete) {
+      setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignToDelete));
+      toast({
+        title: "Campaign Deleted",
+        description: "The campaign has been permanently deleted."
+      });
+    }
     setShowDeleteDialog(false);
     setCampaignToDelete(null);
+  };
+
+  const handleViewDetails = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setShowDetailModal(true);
+  };
+
+  const handleSaveCampaign = (updatedCampaign: Campaign) => {
+    setCampaigns(prev => prev.map(campaign => 
+      campaign.id === updatedCampaign.id ? updatedCampaign : campaign
+    ));
+  };
+
+  const handleViewProgress = (influencerId: string, campaignId: string) => {
+    // This would typically navigate to or open the detailed progress view
+    // For now, we'll show a toast as this connects to the Summary page functionality
+    toast({
+      title: "View Progress",
+      description: `Opening detailed progress for influencer ${influencerId} in campaign ${campaignId}`,
+    });
+    
+    // In a real implementation, this might:
+    // navigate(`/app/summary?campaign=${campaignId}&influencer=${influencerId}`);
+    // or open a detailed progress modal
   };
 
   return (
@@ -145,7 +274,14 @@ const MyCampaigns = () => {
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{campaign.name}</h3>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {campaign.name}
+                          {campaign.isUserCreated && (
+                            <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700">
+                              New
+                            </Badge>
+                          )}
+                        </h3>
                         <div className="flex items-center space-x-4 mt-2">
                           <Badge variant="secondary">{campaign.niche}</Badge>
                           <div className="flex items-center space-x-1">
@@ -166,17 +302,20 @@ const MyCampaigns = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <span>Pause Campaign</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <span>Resume Campaign</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          {campaign.status === "paused" ? (
+                            <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.id)}>
+                              <span>Resume Campaign</span>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.id)}>
+                              <span>Pause Campaign</span>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleArchiveCampaign(campaign.id)}>
                             <span>Archive Campaign</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <span>Duplicate (WIP)</span>
+                            <span>Duplicate Campaign</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
@@ -225,7 +364,11 @@ const MyCampaigns = () => {
 
                   {/* Action Buttons */}
                   <div className="flex flex-col space-y-2 lg:w-64">
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleViewDetails(campaign)}
+                    >
                       View Details & Manage
                     </Button>
                     <Link to={`/app/influencers?campaign=${campaign.id}`} className="w-full">
@@ -257,6 +400,15 @@ const MyCampaigns = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Campaign Detail Modal */}
+      <CampaignDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        campaign={selectedCampaign}
+        onSave={handleSaveCampaign}
+        onViewProgress={handleViewProgress}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

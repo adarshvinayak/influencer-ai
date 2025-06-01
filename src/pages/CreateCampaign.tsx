@@ -154,14 +154,27 @@ const CreateCampaign = () => {
 
     setIsLoading(true);
     
-    // Mock campaign creation
+    // Mock campaign creation with navigation to My Campaigns
     setTimeout(() => {
       setIsLoading(false);
+      
+      // Create new campaign object to pass to My Campaigns
+      const newCampaign = {
+        name: formData.campaignName,
+        niche: formData.niche,
+        platforms: formData.platforms,
+        description: formData.brief,
+        budget: formData.budget ? `₹${formData.budget}` : "Not set",
+        targetLocation: formData.targetAllIndia ? "All India" : formData.targetLocations.join(", ")
+      };
+      
       toast({
         title: "Campaign Created!",
         description: "Your campaign has been created and AI is analyzing for matches."
       });
-      navigate("/app/influencers");
+      
+      // Navigate to My Campaigns with the new campaign data
+      navigate("/app/campaigns", { state: { newCampaign } });
     }, 2000);
   };
 
