@@ -9,15 +9,16 @@ import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { Campaign } from "@/types/supabase-custom";
+import CampaignDetailModal from "@/components/CampaignDetailModal";
+
 const MyCampaigns = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const location = useLocation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  
   const {
     campaigns,
     isLoading,
@@ -95,43 +96,50 @@ const MyCampaigns = () => {
   const handlePauseCampaign = (campaignId: string) => {
     updateCampaign({
       campaignId,
-      updates: {
-        status: "paused"
-      }
+      updates: { status: "paused" }
     });
     toast({
       title: "Campaign Paused",
       description: "The campaign has been paused and can be resumed later."
     });
   };
+
   const handleResumeCampaign = (campaignId: string) => {
     updateCampaign({
       campaignId,
-      updates: {
-        status: "active-outreach"
-      }
+      updates: { status: "active-outreach" }
     });
     toast({
-      title: "Campaign Resumed",
+      title: "Campaign Resumed", 
       description: "The campaign has been resumed and is now active."
     });
   };
-  const handleArchiveCampaign = (campaignId: string) => {
-    updateCampaign({
-      campaignId,
-      updates: {
-        status: "archived"
-      }
-    });
+
+  const handleDuplicateCampaign = (campaign: Campaign) => {
+    const duplicateData = {
+      campaign_name: `${campaign.campaign_name} (Copy)`,
+      niche: campaign.niche,
+      desired_platforms: campaign.desired_platforms,
+      target_locations_india: campaign.target_locations_india,
+      content_types: campaign.content_types,
+      description_brief: campaign.description_brief,
+      budget_amount: campaign.budget_amount,
+      budget_currency: campaign.budget_currency,
+      status: 'Planning Phase'
+    };
+    
+    createCampaign(duplicateData);
     toast({
-      title: "Campaign Archived",
-      description: "The campaign has been moved to archived status."
+      title: "Campaign Duplicated",
+      description: "A copy of the campaign has been created."
     });
   };
+
   const handleDeleteCampaign = (campaignId: string) => {
     setCampaignToDelete(campaignId);
     setShowDeleteDialog(true);
   };
+
   const confirmDelete = () => {
     if (campaignToDelete) {
       deleteCampaign(campaignToDelete);
@@ -143,10 +151,12 @@ const MyCampaigns = () => {
     setShowDeleteDialog(false);
     setCampaignToDelete(null);
   };
+
   const handleViewDetails = (campaign: Campaign) => {
     setSelectedCampaign(campaign);
     setShowDetailModal(true);
   };
+
   const handleSaveCampaign = (updatedCampaign: Campaign) => {
     updateCampaign({
       campaignId: updatedCampaign.campaign_id,
@@ -161,12 +171,14 @@ const MyCampaigns = () => {
       }
     });
   };
+
   const handleViewProgress = (influencerId: string, campaignId: string) => {
     toast({
       title: "View Progress",
       description: `Opening detailed progress for influencer ${influencerId} in campaign ${campaignId}`
     });
   };
+
   if (isLoading) {
     return <div className="space-y-6">
         <div className="flex justify-between items-start">
@@ -180,7 +192,9 @@ const MyCampaigns = () => {
         </div>
       </div>;
   }
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -194,8 +208,10 @@ const MyCampaigns = () => {
       </div>
 
       {/* Campaigns Grid */}
-      {campaigns && campaigns.length > 0 ? <div className="grid gap-6">
-          {campaigns.map(campaign => <Card key={campaign.campaign_id} className="hover:shadow-lg transition-shadow">
+      {campaigns && campaigns.length > 0 ? (
+        <div className="grid gap-6">
+          {campaigns.map(campaign => (
+            <Card key={campaign.campaign_id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   {/* Campaign Info */}
@@ -208,9 +224,11 @@ const MyCampaigns = () => {
                         <div className="flex items-center space-x-4 mt-2">
                           <Badge variant="secondary">{campaign.niche}</Badge>
                           <div className="flex items-center space-x-1">
-                            {campaign.desired_platforms?.map((platform, index) => <div key={index} className="flex items-center">
+                            {campaign.desired_platforms?.map((platform, index) => (
+                              <div key={index} className="flex items-center">
                                 {getPlatformIcon(platform)}
-                              </div>)}
+                              </div>
+                            ))}
                           </div>
                           {getStatusBadge(campaign.status)}
                         </div>
@@ -223,15 +241,16 @@ const MyCampaigns = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {campaign.status === "paused" ? <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.campaign_id)}>
+                          {campaign.status === "paused" ? (
+                            <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.campaign_id)}>
                               <span>Resume Campaign</span>
-                            </DropdownMenuItem> : <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.campaign_id)}>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.campaign_id)}>
                               <span>Pause Campaign</span>
-                            </DropdownMenuItem>}
-                          <DropdownMenuItem onClick={() => handleArchiveCampaign(campaign.campaign_id)}>
-                            <span>Archive Campaign</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleDuplicateCampaign(campaign)}>
                             <span>Duplicate Campaign</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCampaign(campaign.campaign_id)}>
@@ -251,7 +270,9 @@ const MyCampaigns = () => {
                       <div className="flex items-center text-gray-600">
                         <Calendar className="h-4 w-4 mr-2" />
                         <span className="text-xs">
-                          {campaign.start_date && campaign.end_date ? `${new Date(campaign.start_date).toLocaleDateString()} - ${new Date(campaign.end_date).toLocaleDateString()}` : 'Dates not set'}
+                          {campaign.start_date && campaign.end_date 
+                            ? `${new Date(campaign.start_date).toLocaleDateString()} - ${new Date(campaign.end_date).toLocaleDateString()}` 
+                            : 'Dates not set'}
                         </span>
                       </div>
                       <div className="flex items-center text-gray-600">
@@ -274,8 +295,11 @@ const MyCampaigns = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>)}
-        </div> : (/* Empty State */
+            </Card>
+          ))}
+        </div>
+      ) : (
+        /* Empty State */
     <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FolderPlus className="h-16 w-16 text-gray-300 mb-4" />
@@ -290,7 +314,8 @@ const MyCampaigns = () => {
               </Button>
             </Link>
           </CardContent>
-        </Card>)}
+        </Card>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -311,6 +336,21 @@ const MyCampaigns = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>;
+
+      {/* Campaign Detail Modal */}
+      <CampaignDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        campaign={selectedCampaign}
+        onSave={handleSaveCampaign}
+        onViewProgress={handleViewProgress}
+        onPause={handlePauseCampaign}
+        onResume={handleResumeCampaign}
+        onDuplicate={handleDuplicateCampaign}
+        onDelete={handleDeleteCampaign}
+      />
+    </div>
+  );
 };
+
 export default MyCampaigns;

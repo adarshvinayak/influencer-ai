@@ -10,25 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Instagram, Youtube, Users, Calendar, MapPin, Eye, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { Instagram, Youtube, Users, Calendar, MapPin, Eye, CheckCircle, Clock, AlertTriangle, Play, Pause, Copy, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Campaign {
-  id: string;
-  name: string;
-  niche: string;
-  platforms: string[];
-  status: string;
-  stats: {
-    contacted: number;
-    negotiations: number;
-    deals: number;
-    duration: string;
-  };
-  budget: string;
-  description: string;
-  targetLocation: string;
-}
+import { Campaign } from "@/types/supabase-custom";
 
 interface AssociatedInfluencer {
   id: string;
@@ -47,9 +31,23 @@ interface CampaignDetailModalProps {
   campaign: Campaign | null;
   onSave: (updatedCampaign: Campaign) => void;
   onViewProgress: (influencerId: string, campaignId: string) => void;
+  onPause: (campaignId: string) => void;
+  onResume: (campaignId: string) => void;
+  onDuplicate: (campaign: Campaign) => void;
+  onDelete: (campaignId: string) => void;
 }
 
-const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress }: CampaignDetailModalProps) => {
+const CampaignDetailModal = ({ 
+  isOpen, 
+  onClose, 
+  campaign, 
+  onSave, 
+  onViewProgress,
+  onPause,
+  onResume,
+  onDuplicate,
+  onDelete
+}: CampaignDetailModalProps) => {
   const { toast } = useToast();
   const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(campaign);
   const [isLoading, setIsLoading] = useState(false);
@@ -149,9 +147,9 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
     
     setEditedCampaign(prev => ({
       ...prev!,
-      platforms: checked 
-        ? [...prev!.platforms, platform]
-        : prev!.platforms.filter(p => p !== platform)
+      desired_platforms: checked 
+        ? [...(prev!.desired_platforms || []), platform]
+        : (prev!.desired_platforms || []).filter(p => p !== platform)
     }));
   };
 
@@ -161,8 +159,31 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Campaign Management: {campaign.name}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Campaign Management: {campaign.campaign_name}</DialogTitle>
         </DialogHeader>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {campaign.status === "paused" ? (
+            <Button variant="outline" onClick={() => onResume(campaign.campaign_id)} className="flex items-center space-x-2">
+              <Play className="h-4 w-4" />
+              <span>Resume Campaign</span>
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={() => onPause(campaign.campaign_id)} className="flex items-center space-x-2">
+              <Pause className="h-4 w-4" />
+              <span>Pause Campaign</span>
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => onDuplicate(campaign)} className="flex items-center space-x-2">
+            <Copy className="h-4 w-4" />
+            <span>Duplicate Campaign</span>
+          </Button>
+          <Button variant="destructive" onClick={() => onDelete(campaign.campaign_id)} className="flex items-center space-x-2">
+            <Trash2 className="h-4 w-4" />
+            <span>Delete Campaign</span>
+          </Button>
+        </div>
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -181,8 +202,8 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
                     <Label htmlFor="campaignName">Campaign Name</Label>
                     <Input
                       id="campaignName"
-                      value={editedCampaign.name}
-                      onChange={(e) => setEditedCampaign({...editedCampaign, name: e.target.value})}
+                      value={editedCampaign.campaign_name}
+                      onChange={(e) => setEditedCampaign({...editedCampaign, campaign_name: e.target.value})}
                     />
                   </div>
                   <div>
@@ -209,7 +230,7 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
                       <div key={platform} className="flex items-center space-x-2">
                         <Checkbox
                           id={platform}
-                          checked={editedCampaign.platforms.includes(platform)}
+                          checked={editedCampaign.desired_platforms?.includes(platform) || false}
                           onCheckedChange={(checked) => handlePlatformChange(platform, checked as boolean)}
                         />
                         <Label htmlFor={platform}>{platform}</Label>
@@ -222,27 +243,31 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
                   <Label htmlFor="description">Campaign Description</Label>
                   <Textarea
                     id="description"
-                    value={editedCampaign.description}
-                    onChange={(e) => setEditedCampaign({...editedCampaign, description: e.target.value})}
+                    value={editedCampaign.description_brief}
+                    onChange={(e) => setEditedCampaign({...editedCampaign, description_brief: e.target.value})}
                     rows={4}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="budget">Budget (INR)</Label>
+                    <Label htmlFor="budget">Budget ({editedCampaign.budget_currency})</Label>
                     <Input
                       id="budget"
-                      value={editedCampaign.budget}
-                      onChange={(e) => setEditedCampaign({...editedCampaign, budget: e.target.value})}
+                      type="number"
+                      value={editedCampaign.budget_amount || ""}
+                      onChange={(e) => setEditedCampaign({...editedCampaign, budget_amount: parseFloat(e.target.value) || 0})}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="targetLocation">Target Location</Label>
+                    <Label htmlFor="targetLocation">Target Locations</Label>
                     <Input
                       id="targetLocation"
-                      value={editedCampaign.targetLocation}
-                      onChange={(e) => setEditedCampaign({...editedCampaign, targetLocation: e.target.value})}
+                      value={editedCampaign.target_locations_india?.join(', ') || ""}
+                      onChange={(e) => setEditedCampaign({
+                        ...editedCampaign, 
+                        target_locations_india: e.target.value.split(',').map(s => s.trim())
+                      })}
                     />
                   </div>
                 </div>
@@ -286,7 +311,7 @@ const CampaignDetailModal = ({ isOpen, onClose, campaign, onSave, onViewProgress
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onViewProgress(influencer.id, campaign.id)}
+                          onClick={() => onViewProgress(influencer.id, campaign.campaign_id)}
                           className="flex items-center space-x-1"
                         >
                           <Eye className="h-4 w-4" />
