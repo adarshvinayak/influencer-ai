@@ -78,6 +78,12 @@ const Signup = () => {
     }, 2000);
   };
 
+  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    // Accept URLs without protocol - don't force https://
+    setFormData({...formData, website: value});
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -107,7 +113,28 @@ const Signup = () => {
             </div>
 
             <div className="space-y-6">
-              {features.map((feature, index) => (
+              {[
+                {
+                  icon: Building2,
+                  title: "1. Set Up & Strategize",
+                  description: "Sign up, detail your brand, and craft targeted campaigns (niche, platforms, content goals, detailed brief)."
+                },
+                {
+                  icon: BrainCircuit,
+                  title: "2. Find Your Match with AI",
+                  description: "Explore our curated Indian influencer database. Smart filters & AI (custom embeddings) match your campaign brief to relevant profiles."
+                },
+                {
+                  icon: BotMessageSquare,
+                  title: "3. Automate Smart Outreach",
+                  description: "Our AI agents (GPT-4 for messages, ElevenLabs/Whisper for voice) initiate personalized, multilingual outreach and handle basic negotiations."
+                },
+                {
+                  icon: AreaChart,
+                  title: "4. Monitor, Sign & Succeed",
+                  description: "Track outreach status, manage e-signed contracts (DocuSign/Native), process payments (Razorpay/Stripe), and analyze campaign performance."
+                }
+              ].map((feature, index) => (
                 <Card key={index} className="hover:shadow-md transition-shadow duration-300 border-l-4 border-l-teal-500">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
@@ -155,12 +182,14 @@ const Signup = () => {
                       <Label htmlFor="website">Brand Website *</Label>
                       <Input
                         id="website"
-                        type="url"
-                        placeholder="https://www.yourbrand.com"
+                        placeholder="yourbrand.com or www.yourbrand.com"
                         value={formData.website}
-                        onChange={(e) => setFormData({...formData, website: e.target.value})}
+                        onChange={handleWebsiteChange}
                         required
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        You can enter with or without https:// - we'll handle the rest
+                      </p>
                     </div>
 
                     <div>

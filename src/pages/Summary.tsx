@@ -5,14 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PhoneCall, MessageSquare, Mail, Users, Bot, AlertTriangle, Info, CheckCircle, DollarSign, FileText } from "lucide-react";
+import { PhoneCall, MessageSquare, Mail, Users, Bot, AlertTriangle, Info, CheckCircle, DollarSign, FileText, Target, Rocket, PartyPopper } from "lucide-react";
+import { useParams, useSearchParams } from "react-router-dom";
 
 const Summary = () => {
+  const { campaignId, influencerId } = useParams();
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     campaign: "all",
     status: "all",
     method: "all"
   });
+
+  // Check if we should show specific outreach details
+  const shouldShowSpecificOutreach = campaignId && influencerId;
 
   // Mock outreach data
   const mockOutreach = [
@@ -20,6 +26,8 @@ const Summary = () => {
       id: 1,
       influencer: { name: "Priya Singh", handle: "@StyleWithPriya", pic: "/placeholder.svg" },
       campaign: "Spring Fashion",
+      campaignId: "1",
+      influencerId: "2",
       method: "email",
       agent: "Eva (Chat/Email)",
       status: "response-positive",
@@ -39,6 +47,8 @@ const Summary = () => {
       id: 2,
       influencer: { name: "Rohan Verma", handle: "@TechWithRohan", pic: "/placeholder.svg" },
       campaign: "Tech Gadget Reviews",
+      campaignId: "2",
+      influencerId: "1",
       method: "phone",
       agent: "Sam (Voice)",
       status: "negotiating",
@@ -58,6 +68,8 @@ const Summary = () => {
       id: 3,
       influencer: { name: "Ananya Joshi", handle: "@AnanyaEats", pic: "/placeholder.svg" },
       campaign: "Organic Food Fest",
+      campaignId: "3",
+      influencerId: "3",
       method: "chat",
       agent: "Eva (Chat/Email)",
       status: "deal-finalized",
@@ -76,6 +88,24 @@ const Summary = () => {
       }
     }
   ];
+
+  // Filter outreach data if specific campaign/influencer is requested
+  const filteredOutreach = shouldShowSpecificOutreach 
+    ? mockOutreach.filter(item => item.campaignId === campaignId && item.influencerId === influencerId)
+    : mockOutreach;
+
+  // Categorize data for dashboard sections
+  const activeCampaigns = mockOutreach.filter(item => 
+    ["ai-drafting", "ai-reaching", "waiting-response", "response-positive", "negotiating"].includes(item.status)
+  );
+
+  const attentionRequired = mockOutreach.filter(item => 
+    ["needs-help", "budget-exceeded"].includes(item.status)
+  );
+
+  const recentSuccesses = mockOutreach.filter(item => 
+    ["deal-finalized", "contract-signed", "payment-processed"].includes(item.status)
+  );
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -105,12 +135,225 @@ const Summary = () => {
     }
   };
 
+  // If showing specific outreach, display detailed view immediately
+  if (shouldShowSpecificOutreach && filteredOutreach.length > 0) {
+    const specificOutreach = filteredOutreach[0];
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Outreach Progress: {specificOutreach.influencer.name} × {specificOutreach.campaign}
+          </h1>
+          <p className="text-gray-600 mt-2">Detailed progress tracking for this specific outreach</p>
+        </div>
+
+        <Card className="border-2 border-teal-200">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <Users className="h-8 w-8 text-gray-400" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{specificOutreach.influencer.name}</h2>
+                  <p className="text-gray-600">{specificOutreach.influencer.handle}</p>
+                  <p className="text-sm text-teal-600 font-medium">Campaign: {specificOutreach.campaign}</p>
+                </div>
+              </div>
+              {getStatusBadge(specificOutreach.status)}
+            </div>
+
+            <Tabs defaultValue="progress" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="progress">Progress Timeline</TabsTrigger>
+                <TabsTrigger value="communication">Communication Log</TabsTrigger>
+                <TabsTrigger value="contract">Contract & Payment</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="progress" className="space-y-4 mt-6">
+                <div className="space-y-4">
+                  {specificOutreach.details.progress.map((step, index) => (
+                    <div key={index} className="flex items-center space-x-4">
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                        index < specificOutreach.details.currentStep 
+                          ? 'bg-green-500 text-white' 
+                          : index === specificOutreach.details.currentStep 
+                            ? 'bg-blue-500 text-white' 
+                            : 'bg-gray-200 text-gray-400'
+                      }`}>
+                        {index < specificOutreach.details.currentStep ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <span className="text-sm font-medium">{index + 1}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-medium ${
+                          index <= specificOutreach.details.currentStep ? 'text-gray-900' : 'text-gray-400'
+                        }`}>
+                          {step}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="communication" className="space-y-4 mt-6">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {specificOutreach.details.log.map((entry, index) => (
+                    <div key={index} className="flex space-x-3">
+                      <div className="flex-shrink-0">
+                        {entry.type === 'system' && <Bot className="h-5 w-5 text-blue-500" />}
+                        {entry.type === 'ai' && <Bot className="h-5 w-5 text-purple-500" />}
+                        {entry.type === 'influencer' && <Users className="h-5 w-5 text-green-500" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-sm font-medium text-gray-900">
+                            {entry.type === 'system' ? 'System' : 
+                             entry.type === 'ai' ? 'AI Agent' : 'Influencer'}
+                          </span>
+                          <span className="text-xs text-gray-500">{entry.time}</span>
+                        </div>
+                        <p className="text-sm text-gray-600">{entry.message}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="contract" className="space-y-4 mt-6">
+                {specificOutreach.status === 'deal-finalized' ? (
+                  <div className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                          Deal Confirmed!
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-500">Agreed Rate</p>
+                            <p className="font-semibold">18,000 INR</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Deliverables</p>
+                            <p className="font-semibold">3 Instagram Posts + 1 Reel</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Timeline</p>
+                            <p className="font-semibold">2 weeks</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Contract Status</p>
+                            <Badge className="bg-green-100 text-green-800">Signed</Badge>
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t">
+                          <Button variant="outline" className="mr-2">
+                            <FileText className="h-4 w-4 mr-2" />
+                            View Signed Contract
+                          </Button>
+                          <p className="text-xs text-gray-500 mt-2">
+                            E-signed via Influencer-AI E-Sign (DocuSign/Native). Audit trail available.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>Contract details will appear here once deal is finalized</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Outreach Summary & Deal Tracker</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Campaign Dashboard & Outreach Summary</h1>
         <p className="text-gray-600 mt-2">Monitor AI-driven outreach progress and manage deals</p>
+      </div>
+
+      {/* Dashboard Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Active Campaigns */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Rocket className="h-5 w-5 mr-2 text-blue-500" />
+              Active Outreach
+            </CardTitle>
+            <CardDescription>Campaigns with ongoing AI outreach</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{activeCampaigns.length}</div>
+            <p className="text-sm text-gray-600">Influencers in active outreach</p>
+            <div className="mt-4 space-y-2">
+              {activeCampaigns.slice(0, 2).map((item) => (
+                <div key={item.id} className="text-xs p-2 bg-blue-50 rounded">
+                  <span className="font-medium">{item.campaign}</span> - {item.influencer.name}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Attention Required */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2 text-orange-500" />
+              Attention Required
+            </CardTitle>
+            <CardDescription>Issues needing human intervention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">2</div>
+            <p className="text-sm text-gray-600">Items need your attention</p>
+            <div className="mt-4 space-y-2">
+              <div className="text-xs p-2 bg-orange-50 rounded">
+                <span className="font-medium">Budget exceeded</span> - Tech Campaign
+              </div>
+              <div className="text-xs p-2 bg-orange-50 rounded">
+                <span className="font-medium">Legal question</span> - Fashion Campaign
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Successes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <PartyPopper className="h-5 w-5 mr-2 text-green-500" />
+              Recent Successes
+            </CardTitle>
+            <CardDescription>Finalized deals and contracts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{recentSuccesses.length}</div>
+            <p className="text-sm text-gray-600">Deals finalized this week</p>
+            <div className="mt-4 space-y-2">
+              {recentSuccesses.slice(0, 2).map((item) => (
+                <div key={item.id} className="text-xs p-2 bg-green-50 rounded">
+                  <span className="font-medium">{item.campaign}</span> - {item.influencer.name}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -162,168 +405,176 @@ const Summary = () => {
         </CardContent>
       </Card>
 
-      {/* Outreach List */}
-      <div className="space-y-4">
-        {mockOutreach.map((outreach) => (
-          <Card key={outreach.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Users className="h-6 w-6 text-gray-400" />
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4 mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{outreach.influencer.name}</h3>
-                        <p className="text-sm text-gray-600">{outreach.influencer.handle}</p>
+      {/* All Outreach Activity Log */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Outreach Activity Log</CardTitle>
+          <CardDescription>Complete history of AI outreach activities</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="space-y-4 p-6">
+            {mockOutreach.map((outreach) => (
+              <Card key={outreach.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <Users className="h-6 w-6 text-gray-400" />
                       </div>
                       
-                      <div>
-                        <p className="font-medium text-blue-600">{outreach.campaign}</p>
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          {getMethodIcon(outreach.method)}
-                          <span>{outreach.agent}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-4 mb-2">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{outreach.influencer.name}</h3>
+                            <p className="text-sm text-gray-600">{outreach.influencer.handle}</p>
+                          </div>
+                          
+                          <div>
+                            <p className="font-medium text-blue-600">{outreach.campaign}</p>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                              {getMethodIcon(outreach.method)}
+                              <span>{outreach.agent}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4">
+                          {getStatusBadge(outreach.status)}
+                          <span className="text-sm text-gray-500">Updated {outreach.lastUpdated}</span>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      {getStatusBadge(outreach.status)}
-                      <span className="text-sm text-gray-500">Updated {outreach.lastUpdated}</span>
-                    </div>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline">View Full Progress & Details</Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Progress: {outreach.influencer.name} for '{outreach.campaign}'</DialogTitle>
+                          <DialogDescription>
+                            Detailed outreach progress and communication log
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <Tabs defaultValue="progress" className="w-full">
+                          <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="progress">Progress Timeline</TabsTrigger>
+                            <TabsTrigger value="communication">Communication Log</TabsTrigger>
+                            <TabsTrigger value="contract">Contract & Payment</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="progress" className="space-y-4">
+                            <div className="space-y-4">
+                              {outreach.details.progress.map((step, index) => (
+                                <div key={index} className="flex items-center space-x-4">
+                                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                                    index < outreach.details.currentStep 
+                                      ? 'bg-green-500 text-white' 
+                                      : index === outreach.details.currentStep 
+                                        ? 'bg-blue-500 text-white' 
+                                        : 'bg-gray-200 text-gray-400'
+                                  }`}>
+                                    {index < outreach.details.currentStep ? (
+                                      <CheckCircle className="h-4 w-4" />
+                                    ) : (
+                                      <span className="text-sm font-medium">{index + 1}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className={`font-medium ${
+                                      index <= outreach.details.currentStep ? 'text-gray-900' : 'text-gray-400'
+                                    }`}>
+                                      {step}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="communication" className="space-y-4">
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                              {outreach.details.log.map((entry, index) => (
+                                <div key={index} className="flex space-x-3">
+                                  <div className="flex-shrink-0">
+                                    {entry.type === 'system' && <Bot className="h-5 w-5 text-blue-500" />}
+                                    {entry.type === 'ai' && <Bot className="h-5 w-5 text-purple-500" />}
+                                    {entry.type === 'influencer' && <Users className="h-5 w-5 text-green-500" />}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <span className="text-sm font-medium text-gray-900">
+                                        {entry.type === 'system' ? 'System' : 
+                                         entry.type === 'ai' ? 'AI Agent' : 'Influencer'}
+                                      </span>
+                                      <span className="text-xs text-gray-500">{entry.time}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600">{entry.message}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="contract" className="space-y-4">
+                            {outreach.status === 'deal-finalized' ? (
+                              <div className="space-y-4">
+                                <Card>
+                                  <CardHeader>
+                                    <CardTitle className="flex items-center">
+                                      <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                                      Deal Confirmed!
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Agreed Rate</p>
+                                        <p className="font-semibold">18,000 INR</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Deliverables</p>
+                                        <p className="font-semibold">3 Instagram Posts + 1 Reel</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Timeline</p>
+                                        <p className="font-semibold">2 weeks</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Contract Status</p>
+                                        <Badge className="bg-green-100 text-green-800">Signed</Badge>
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t">
+                                      <Button variant="outline" className="mr-2">
+                                        <FileText className="h-4 w-4 mr-2" />
+                                        View Signed Contract
+                                      </Button>
+                                      <p className="text-xs text-gray-500 mt-2">
+                                        E-signed via Influencer-AI E-Sign (DocuSign/Native). Audit trail available.
+                                      </p>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-gray-500">
+                                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                <p>Contract details will appear here once deal is finalized</p>
+                              </div>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+                      </DialogContent>
+                    </Dialog>
                   </div>
-                </div>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">View Full Progress & Details</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Progress: {outreach.influencer.name} for &apos;{outreach.campaign}&apos;</DialogTitle>
-                      <DialogDescription>
-                        Detailed outreach progress and communication log
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <Tabs defaultValue="progress" className="w-full">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="progress">Progress Timeline</TabsTrigger>
-                        <TabsTrigger value="communication">Communication Log</TabsTrigger>
-                        <TabsTrigger value="contract">Contract & Payment</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="progress" className="space-y-4">
-                        <div className="space-y-4">
-                          {outreach.details.progress.map((step, index) => (
-                            <div key={index} className="flex items-center space-x-4">
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                                index < outreach.details.currentStep 
-                                  ? 'bg-green-500 text-white' 
-                                  : index === outreach.details.currentStep 
-                                    ? 'bg-blue-500 text-white' 
-                                    : 'bg-gray-200 text-gray-400'
-                              }`}>
-                                {index < outreach.details.currentStep ? (
-                                  <CheckCircle className="h-4 w-4" />
-                                ) : (
-                                  <span className="text-sm font-medium">{index + 1}</span>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <p className={`font-medium ${
-                                  index <= outreach.details.currentStep ? 'text-gray-900' : 'text-gray-400'
-                                }`}>
-                                  {step}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="communication" className="space-y-4">
-                        <div className="space-y-4 max-h-96 overflow-y-auto">
-                          {outreach.details.log.map((entry, index) => (
-                            <div key={index} className="flex space-x-3">
-                              <div className="flex-shrink-0">
-                                {entry.type === 'system' && <Bot className="h-5 w-5 text-blue-500" />}
-                                {entry.type === 'ai' && <Bot className="h-5 w-5 text-purple-500" />}
-                                {entry.type === 'influencer' && <Users className="h-5 w-5 text-green-500" />}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {entry.type === 'system' ? 'System' : 
-                                     entry.type === 'ai' ? 'AI Agent' : 'Influencer'}
-                                  </span>
-                                  <span className="text-xs text-gray-500">{entry.time}</span>
-                                </div>
-                                <p className="text-sm text-gray-600">{entry.message}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="contract" className="space-y-4">
-                        {outreach.status === 'deal-finalized' ? (
-                          <div className="space-y-4">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle className="flex items-center">
-                                  <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-                                  Deal Confirmed!
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm text-gray-500">Agreed Rate</p>
-                                    <p className="font-semibold">18,000 INR</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-gray-500">Deliverables</p>
-                                    <p className="font-semibold">3 Instagram Posts + 1 Reel</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-gray-500">Timeline</p>
-                                    <p className="font-semibold">2 weeks</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-gray-500">Contract Status</p>
-                                    <Badge className="bg-green-100 text-green-800">Signed</Badge>
-                                  </div>
-                                </div>
-                                <div className="mt-4 pt-4 border-t">
-                                  <Button variant="outline" className="mr-2">
-                                    <FileText className="h-4 w-4 mr-2" />
-                                    View Signed Contract
-                                  </Button>
-                                  <p className="text-xs text-gray-500 mt-2">
-                                    E-signed via Influencer-AI E-Sign (DocuSign/Native). Audit trail available.
-                                  </p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 text-gray-500">
-                            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                            <p>Contract details will appear here once deal is finalized</p>
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Alerts Section */}
       <Card>
@@ -340,7 +591,7 @@ const Summary = () => {
               <div className="flex-1">
                 <h4 className="font-medium text-red-800">Critical: Budget Exceeded</h4>
                 <p className="text-sm text-red-700 mt-1">
-                  Influencer Vikram&apos;s quote (25k INR) &gt; budget (20k INR). AI GPT-4 negotiation failed. Human intervention strongly recommended.
+                  Influencer Vikram's quote (25k INR) &gt; budget (20k INR). AI GPT-4 negotiation failed. Human intervention strongly recommended.
                 </p>
                 <div className="flex space-x-2 mt-3">
                   <Button size="sm" variant="outline">Override Budget (mock)</Button>
@@ -357,7 +608,7 @@ const Summary = () => {
               <div className="flex-1">
                 <h4 className="font-medium text-yellow-800">Attention: Legal Questions</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Influencer Priya asked legal questions AI Sam can&apos;t answer. Human follow-up needed.
+                  Influencer Priya asked legal questions AI Sam can't answer. Human follow-up needed.
                 </p>
                 <div className="flex space-x-2 mt-3">
                   <Button size="sm" variant="outline">View Question</Button>

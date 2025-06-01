@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Info } from "lucide-react";
+import { CalendarIcon, Info, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +20,10 @@ const CreateCampaign = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [dateErrors, setDateErrors] = useState({
+    startDate: "",
+    endDate: ""
+  });
 
   const [formData, setFormData] = useState({
     campaignName: "",
@@ -58,6 +61,47 @@ const CreateCampaign = () => {
     "Daman & Diu", "Lakshadweep", "Puducherry"
   ];
 
+  const validateDates = (newStartDate?: Date, newEndDate?: Date) => {
+    const errors = { startDate: "", endDate: "" };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Validate start date
+    if (newStartDate) {
+      if (newStartDate <= today) {
+        errors.startDate = "Start date must be in the future";
+      }
+    }
+
+    // Validate end date
+    if (newEndDate && newStartDate) {
+      if (newEndDate < newStartDate) {
+        errors.endDate = "End date cannot be before the start date";
+      }
+    } else if (newEndDate && startDate) {
+      if (newEndDate < startDate) {
+        errors.endDate = "End date cannot be before the start date";
+      }
+    }
+
+    setDateErrors(errors);
+    return errors;
+  };
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDate(date);
+    if (date) {
+      validateDates(date, endDate);
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    setEndDate(date);
+    if (date) {
+      validateDates(startDate, date);
+    }
+  };
+
   const handlePlatformChange = (platform: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -92,6 +136,17 @@ const CreateCampaign = () => {
       toast({
         title: "Brief too short",
         description: "Please provide at least 100 characters for better AI matching.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check for date validation errors
+    const currentDateErrors = validateDates(startDate, endDate);
+    if (currentDateErrors.startDate || currentDateErrors.endDate) {
+      toast({
+        title: "Date validation error",
+        description: "Please fix the date errors before submitting.",
         variant: "destructive"
       });
       return;
@@ -287,7 +342,8 @@ const CreateCampaign = () => {
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
+                        !startDate && "text-muted-foreground",
+                        dateErrors.startDate && "border-red-500"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -298,12 +354,18 @@ const CreateCampaign = () => {
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={setStartDate}
+                      onSelect={handleStartDateChange}
                       initialFocus
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
+                {dateErrors.startDate && (
+                  <div className="flex items-center mt-2 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {dateErrors.startDate}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -314,7 +376,8 @@ const CreateCampaign = () => {
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
+                        !endDate && "text-muted-foreground",
+                        dateErrors.endDate && "border-red-500"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -325,12 +388,18 @@ const CreateCampaign = () => {
                     <Calendar
                       mode="single"
                       selected={endDate}
-                      onSelect={setEndDate}
+                      onSelect={handleEndDateChange}
                       initialFocus
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
+                {dateErrors.endDate && (
+                  <div className="flex items-center mt-2 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {dateErrors.endDate}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
