@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,8 +48,23 @@ const CampaignDetailModal = ({
   onDelete
 }: CampaignDetailModalProps) => {
   const { toast } = useToast();
-  const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(campaign);
+  const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync editedCampaign with campaign prop when it changes
+  useEffect(() => {
+    if (campaign) {
+      setEditedCampaign(campaign);
+    }
+  }, [campaign]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setEditedCampaign(null);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
 
   // Mock associated influencers data
   const associatedInfluencers: AssociatedInfluencer[] = [
