@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,24 +9,24 @@ import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { Campaign } from "@/types/supabase-custom";
-
 const MyCampaigns = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const location = useLocation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  const { 
-    campaigns, 
-    isLoading, 
-    createCampaign, 
-    updateCampaign, 
+  const {
+    campaigns,
+    isLoading,
+    createCampaign,
+    updateCampaign,
     deleteCampaign,
     isCreatingCampaign,
     isUpdatingCampaign,
-    isDeletingCampaign 
+    isDeletingCampaign
   } = useCampaigns();
 
   // Check for new campaigns from navigation state
@@ -43,9 +42,7 @@ const MyCampaigns = () => {
         budget_currency: 'INR',
         status: 'Planning Phase'
       };
-
       createCampaign(newCampaignData);
-      
       toast({
         title: "Campaign Created!",
         description: `"${newCampaignData.campaign_name}" has been added to your campaigns.`
@@ -55,21 +52,36 @@ const MyCampaigns = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state, createCampaign, toast]);
-
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      "Planning Phase": { color: "bg-blue-100 text-blue-800", text: "Planning Phase" },
-      "active-outreach": { color: "bg-green-100 text-green-800", text: "Active - Outreach" },
-      "active-issues": { color: "bg-yellow-100 text-yellow-800", text: "Active - Issues" },
-      "paused": { color: "bg-gray-100 text-gray-800", text: "Paused" },
-      "completed": { color: "bg-gray-100 text-gray-800", text: "Completed" },
-      "archived": { color: "bg-red-100 text-red-800", text: "Archived" }
+      "Planning Phase": {
+        color: "bg-blue-100 text-blue-800",
+        text: "Planning Phase"
+      },
+      "active-outreach": {
+        color: "bg-green-100 text-green-800",
+        text: "Active - Outreach"
+      },
+      "active-issues": {
+        color: "bg-yellow-100 text-yellow-800",
+        text: "Active - Issues"
+      },
+      "paused": {
+        color: "bg-gray-100 text-gray-800",
+        text: "Paused"
+      },
+      "completed": {
+        color: "bg-gray-100 text-gray-800",
+        text: "Completed"
+      },
+      "archived": {
+        color: "bg-red-100 text-red-800",
+        text: "Archived"
+      }
     };
-    
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["Planning Phase"];
     return <Badge className={config.color}>{config.text}</Badge>;
   };
-
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case "Instagram":
@@ -80,48 +92,46 @@ const MyCampaigns = () => {
         return <Target className="h-4 w-4 text-gray-500" />;
     }
   };
-
   const handlePauseCampaign = (campaignId: string) => {
-    updateCampaign({ 
-      campaignId, 
-      updates: { status: "paused" }
+    updateCampaign({
+      campaignId,
+      updates: {
+        status: "paused"
+      }
     });
-    
     toast({
       title: "Campaign Paused",
       description: "The campaign has been paused and can be resumed later."
     });
   };
-
   const handleResumeCampaign = (campaignId: string) => {
-    updateCampaign({ 
-      campaignId, 
-      updates: { status: "active-outreach" }
+    updateCampaign({
+      campaignId,
+      updates: {
+        status: "active-outreach"
+      }
     });
-    
     toast({
       title: "Campaign Resumed",
       description: "The campaign has been resumed and is now active."
     });
   };
-
   const handleArchiveCampaign = (campaignId: string) => {
-    updateCampaign({ 
-      campaignId, 
-      updates: { status: "archived" }
+    updateCampaign({
+      campaignId,
+      updates: {
+        status: "archived"
+      }
     });
-    
     toast({
       title: "Campaign Archived",
       description: "The campaign has been moved to archived status."
     });
   };
-
   const handleDeleteCampaign = (campaignId: string) => {
     setCampaignToDelete(campaignId);
     setShowDeleteDialog(true);
   };
-
   const confirmDelete = () => {
     if (campaignToDelete) {
       deleteCampaign(campaignToDelete);
@@ -133,12 +143,10 @@ const MyCampaigns = () => {
     setShowDeleteDialog(false);
     setCampaignToDelete(null);
   };
-
   const handleViewDetails = (campaign: Campaign) => {
     setSelectedCampaign(campaign);
     setShowDetailModal(true);
   };
-
   const handleSaveCampaign = (updatedCampaign: Campaign) => {
     updateCampaign({
       campaignId: updatedCampaign.campaign_id,
@@ -153,17 +161,14 @@ const MyCampaigns = () => {
       }
     });
   };
-
   const handleViewProgress = (influencerId: string, campaignId: string) => {
     toast({
       title: "View Progress",
-      description: `Opening detailed progress for influencer ${influencerId} in campaign ${campaignId}`,
+      description: `Opening detailed progress for influencer ${influencerId} in campaign ${campaignId}`
     });
   };
-
   if (isLoading) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Influencer Campaigns</h1>
@@ -173,12 +178,9 @@ const MyCampaigns = () => {
         <div className="flex items-center justify-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -187,18 +189,13 @@ const MyCampaigns = () => {
         </div>
         
         <Link to="/app/campaigns/create">
-          <Button className="bg-teal-500 hover:bg-teal-600">
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Campaign
-          </Button>
+          
         </Link>
       </div>
 
       {/* Campaigns Grid */}
-      {campaigns && campaigns.length > 0 ? (
-        <div className="grid gap-6">
-          {campaigns.map((campaign) => (
-            <Card key={campaign.campaign_id} className="hover:shadow-lg transition-shadow">
+      {campaigns && campaigns.length > 0 ? <div className="grid gap-6">
+          {campaigns.map(campaign => <Card key={campaign.campaign_id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   {/* Campaign Info */}
@@ -211,11 +208,9 @@ const MyCampaigns = () => {
                         <div className="flex items-center space-x-4 mt-2">
                           <Badge variant="secondary">{campaign.niche}</Badge>
                           <div className="flex items-center space-x-1">
-                            {campaign.desired_platforms?.map((platform, index) => (
-                              <div key={index} className="flex items-center">
+                            {campaign.desired_platforms?.map((platform, index) => <div key={index} className="flex items-center">
                                 {getPlatformIcon(platform)}
-                              </div>
-                            ))}
+                              </div>)}
                           </div>
                           {getStatusBadge(campaign.status)}
                         </div>
@@ -228,25 +223,18 @@ const MyCampaigns = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {campaign.status === "paused" ? (
-                            <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.campaign_id)}>
+                          {campaign.status === "paused" ? <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.campaign_id)}>
                               <span>Resume Campaign</span>
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.campaign_id)}>
+                            </DropdownMenuItem> : <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.campaign_id)}>
                               <span>Pause Campaign</span>
-                            </DropdownMenuItem>
-                          )}
+                            </DropdownMenuItem>}
                           <DropdownMenuItem onClick={() => handleArchiveCampaign(campaign.campaign_id)}>
                             <span>Archive Campaign</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <span>Duplicate Campaign</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => handleDeleteCampaign(campaign.campaign_id)}
-                          >
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCampaign(campaign.campaign_id)}>
                             <span>Delete Campaign</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -263,10 +251,7 @@ const MyCampaigns = () => {
                       <div className="flex items-center text-gray-600">
                         <Calendar className="h-4 w-4 mr-2" />
                         <span className="text-xs">
-                          {campaign.start_date && campaign.end_date 
-                            ? `${new Date(campaign.start_date).toLocaleDateString()} - ${new Date(campaign.end_date).toLocaleDateString()}`
-                            : 'Dates not set'
-                          }
+                          {campaign.start_date && campaign.end_date ? `${new Date(campaign.start_date).toLocaleDateString()} - ${new Date(campaign.end_date).toLocaleDateString()}` : 'Dates not set'}
                         </span>
                       </div>
                       <div className="flex items-center text-gray-600">
@@ -278,11 +263,7 @@ const MyCampaigns = () => {
 
                   {/* Action Buttons */}
                   <div className="flex flex-col space-y-2 lg:w-64">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => handleViewDetails(campaign)}
-                    >
+                    <Button variant="outline" className="w-full" onClick={() => handleViewDetails(campaign)}>
                       View Details & Manage
                     </Button>
                     <Link to={`/app/influencers?campaign=${campaign.campaign_id}`} className="w-full">
@@ -293,12 +274,9 @@ const MyCampaigns = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        /* Empty State */
-        <Card>
+            </Card>)}
+        </div> : (/* Empty State */
+    <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FolderPlus className="h-16 w-16 text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No campaigns yet</h3>
@@ -312,8 +290,7 @@ const MyCampaigns = () => {
               </Button>
             </Link>
           </CardContent>
-        </Card>
-      )}
+        </Card>)}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -334,8 +311,6 @@ const MyCampaigns = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default MyCampaigns;
