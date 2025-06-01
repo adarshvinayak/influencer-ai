@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { simulatePhoneCall } from '@/services/callSimulationService';
 
 export interface OutreachActivity {
   outreach_id: string;
@@ -59,7 +60,11 @@ export const useOutreachActivities = (filters?: {
   });
 
   const addOutreachActivityMutation = useMutation({
-    mutationFn: async (activityData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'brand_id' | 'initiated_at' | 'last_updated_status_at'>) => {
+    mutationFn: async (activityData: Omit<OutreachActivity, 'outreach_id' | 'created_at' | 'updated_at' | 'brand_id' | 'initiated_at' | 'last_updated_status_at'> & {
+      influencerName?: string;
+      campaignName?: string;
+      brandName?: string;
+    }) => {
       // Get the current user's brand_id from the brands table
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -84,10 +89,27 @@ export const useOutreachActivities = (filters?: {
         .single();
       
       if (error) throw new Error(error.message);
+
+      // Automatically simulate call if it's a phone outreach
+      if (data.outreach_method === 'phone' && activityData.influencerName && activityData.campaignName && activityData.brandName) {
+        try {
+          await simulatePhoneCall(
+            data.outreach_id,
+            activityData.influencerName,
+            activityData.campaignName,
+            activityData.brandName
+          );
+        } catch (error) {
+          console.error('Failed to simulate call:', error);
+          // Don't throw here as the outreach was created successfully
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['outreachActivities'] });
+      queryClient.invalidateQueries({ queryKey: ['communicationLogs'] });
     }
   });
 

@@ -7,8 +7,6 @@ import { useUserBrand } from "@/hooks/useUserBrand";
 import { useCommunicationLogs } from "@/hooks/useCommunicationLogs";
 import OutreachHeader from "@/components/outreach/OutreachHeader";
 import OutreachOverview from "@/components/outreach/OutreachOverview";
-import CallSimulation from "@/components/outreach/CallSimulation";
-import AIScriptGenerator from "@/components/outreach/AIScriptGenerator";
 import OutreachTabs from "@/components/outreach/OutreachTabs";
 
 const OutreachDetail = () => {
@@ -58,21 +56,6 @@ const OutreachDetail = () => {
         influencerHandle={influencer?.username_handle}
         campaignName={campaign?.campaign_name}
         campaignPlatforms={campaign?.desired_platforms}
-      />
-
-      <CallSimulation 
-        outreach={outreach}
-        outreachId={outreachId!}
-        influencerName={influencer?.full_name}
-        campaignName={campaign?.campaign_name}
-        brandName={userBrand?.brand_name}
-      />
-
-      <AIScriptGenerator 
-        outreach={outreach}
-        influencer={influencer}
-        campaign={campaign}
-        userBrand={userBrand}
       />
 
       <OutreachTabs 
