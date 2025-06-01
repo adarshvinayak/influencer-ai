@@ -116,12 +116,12 @@ const FindInfluencers = () => {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="niche">Niche</Label>
-                <Select value={filters.niche} onValueChange={(value) => setFilters({...filters, niche: value})}>
+                <Select value={filters.niche} onValueChange={(value) => setFilters({...filters, niche: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any niche" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any niche</SelectItem>
+                    <SelectItem value="all">Any niche</SelectItem>
                     <SelectItem value="Technology">Technology</SelectItem>
                     <SelectItem value="Fashion">Fashion</SelectItem>
                     <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
@@ -134,12 +134,12 @@ const FindInfluencers = () => {
 
               <div>
                 <Label htmlFor="location">Location</Label>
-                <Select value={filters.location} onValueChange={(value) => setFilters({...filters, location: value})}>
+                <Select value={filters.location} onValueChange={(value) => setFilters({...filters, location: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="All India" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All India</SelectItem>
+                    <SelectItem value="all">All India</SelectItem>
                     <SelectItem value="Mumbai">Mumbai</SelectItem>
                     <SelectItem value="Delhi">Delhi</SelectItem>
                     <SelectItem value="Bangalore">Bangalore</SelectItem>
@@ -152,12 +152,12 @@ const FindInfluencers = () => {
 
               <div>
                 <Label htmlFor="followers">Follower Count</Label>
-                <Select value={filters.followerRange} onValueChange={(value) => setFilters({...filters, followerRange: value})}>
+                <Select value={filters.followerRange} onValueChange={(value) => setFilters({...filters, followerRange: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any range" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any range</SelectItem>
+                    <SelectItem value="all">Any range</SelectItem>
                     <SelectItem value="micro">10k - 100k</SelectItem>
                     <SelectItem value="mid">100k - 500k</SelectItem>
                     <SelectItem value="macro">500k+</SelectItem>
