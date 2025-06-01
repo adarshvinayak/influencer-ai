@@ -190,7 +190,7 @@ const Signup = () => {
                     <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
                     
                     <div>
-                      <Label htmlFor="contactName">Person Name *</Label>
+                      <Label htmlFor="contactName">Name *</Label>
                       <Input id="contactName" placeholder="e.g., Priya Sharma" value={formData.contactName} onChange={e => setFormData({
                       ...formData,
                       contactName: e.target.value
