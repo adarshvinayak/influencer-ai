@@ -230,6 +230,13 @@ export type Database = {
             foreignKeyName: "deals_contracts_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "campaign_analytics"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "deals_contracts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["campaign_id"]
           },
@@ -420,6 +427,13 @@ export type Database = {
             foreignKeyName: "outreach_activities_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "campaign_analytics"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "outreach_activities_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["campaign_id"]
           },
@@ -537,7 +551,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      campaign_analytics: {
+        Row: {
+          brand_id: string | null
+          campaign_id: string | null
+          campaign_name: string | null
+          finalized_deals: number | null
+          negotiations: number | null
+          positive_responses: number | null
+          total_deal_value: number | null
+          total_outreach: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["brand_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never

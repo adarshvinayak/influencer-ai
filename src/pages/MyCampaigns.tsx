@@ -9,25 +9,8 @@ import { Plus, MoreVertical, Instagram, Youtube, MapPin, Calendar, Users, Target
 import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import CampaignDetailModal from "@/components/CampaignDetailModal";
-
-interface Campaign {
-  id: string;
-  name: string;
-  niche: string;
-  platforms: string[];
-  status: string;
-  previousStatus?: string; // For pause/resume functionality
-  stats: {
-    contacted: number;
-    negotiations: number;
-    deals: number;
-    duration: string;
-  };
-  budget: string;
-  description: string;
-  targetLocation: string;
-  isUserCreated?: boolean; // To track dynamically added campaigns
-}
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { Campaign } from "@/types/supabase-custom";
 
 const MyCampaigns = () => {
   const { toast } = useToast();
@@ -37,105 +20,46 @@ const MyCampaigns = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Initial mock campaigns data with previousStatus support
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: "1",
-      name: "Spring Fashion Campaign",
-      niche: "Fashion",
-      platforms: ["Instagram", "YouTube"],
-      status: "active-outreach",
-      stats: {
-        contacted: 25,
-        negotiations: 8,
-        deals: 4,
-        duration: "Mar 1 - Mar 31, 2025"
-      },
-      budget: "₹2,50,000",
-      description: "Targeting fashion influencers for spring collection promotion across Instagram and YouTube",
-      targetLocation: "Mumbai, Delhi, Bangalore"
-    },
-    {
-      id: "2",
-      name: "Tech Gadget Reviews",
-      niche: "Technology",
-      platforms: ["YouTube", "Instagram"],
-      status: "active-issues",
-      stats: {
-        contacted: 15,
-        negotiations: 3,
-        deals: 2,
-        duration: "Feb 15 - Apr 15, 2025"
-      },
-      budget: "₹1,80,000",
-      description: "Tech reviewers needed for latest smartphone and gadget reviews",
-      targetLocation: "All India"
-    },
-    {
-      id: "3",
-      name: "Organic Food Fest",
-      niche: "Food & Beverage",
-      platforms: ["Instagram"],
-      status: "completed",
-      stats: {
-        contacted: 20,
-        negotiations: 5,
-        deals: 5,
-        duration: "Jan 1 - Jan 31, 2025"
-      },
-      budget: "₹1,20,000",
-      description: "Promoting organic food festival with food bloggers and health influencers",
-      targetLocation: "Delhi, Pune"
-    },
-    {
-      id: "4",
-      name: "Fitness Challenge Draft",
-      niche: "Health & Fitness",
-      platforms: ["Instagram", "YouTube"],
-      status: "planning",
-      stats: {
-        contacted: 0,
-        negotiations: 0,
-        deals: 0,
-        duration: "Not set"
-      },
-      budget: "₹80,000",
-      description: "Draft campaign for fitness challenge promotion",
-      targetLocation: "All India"
-    }
-  ]);
+  const { 
+    campaigns, 
+    isLoading, 
+    createCampaign, 
+    updateCampaign, 
+    deleteCampaign,
+    isCreatingCampaign,
+    isUpdatingCampaign,
+    isDeletingCampaign 
+  } = useCampaigns();
 
   // Check for new campaigns from navigation state
   useEffect(() => {
     if (location.state?.newCampaign) {
-      const newCampaign: Campaign = {
-        ...location.state.newCampaign,
-        id: Date.now().toString(),
-        status: "planning", // Default status for new campaigns
-        isUserCreated: true,
-        stats: {
-          contacted: 0,
-          negotiations: 0,
-          deals: 0,
-          duration: "Not set"
-        }
+      const newCampaignData = {
+        campaign_name: location.state.newCampaign.name,
+        niche: location.state.newCampaign.niche,
+        desired_platforms: location.state.newCampaign.platforms,
+        target_locations_india: location.state.newCampaign.targetLocation ? [location.state.newCampaign.targetLocation] : [],
+        description_brief: location.state.newCampaign.description,
+        budget_amount: parseFloat(location.state.newCampaign.budget.replace(/[₹,]/g, '')) || 0,
+        budget_currency: 'INR',
+        status: 'Planning Phase'
       };
 
-      setCampaigns(prev => [newCampaign, ...prev]);
+      createCampaign(newCampaignData);
       
       toast({
         title: "Campaign Created!",
-        description: `"${newCampaign.name}" has been added to your campaigns.`
+        description: `"${newCampaignData.campaign_name}" has been added to your campaigns.`
       });
 
       // Clear the navigation state
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, toast]);
+  }, [location.state, createCampaign, toast]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      "planning": { color: "bg-blue-100 text-blue-800", text: "Planning Phase" },
+      "Planning Phase": { color: "bg-blue-100 text-blue-800", text: "Planning Phase" },
       "active-outreach": { color: "bg-green-100 text-green-800", text: "Active - Outreach" },
       "active-issues": { color: "bg-yellow-100 text-yellow-800", text: "Active - Issues" },
       "paused": { color: "bg-gray-100 text-gray-800", text: "Paused" },
@@ -143,7 +67,7 @@ const MyCampaigns = () => {
       "archived": { color: "bg-red-100 text-red-800", text: "Archived" }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["planning"];
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["Planning Phase"];
     return <Badge className={config.color}>{config.text}</Badge>;
   };
 
@@ -159,15 +83,10 @@ const MyCampaigns = () => {
   };
 
   const handlePauseCampaign = (campaignId: string) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === campaignId 
-        ? { 
-            ...campaign, 
-            previousStatus: campaign.status, // Store current status
-            status: "paused" 
-          }
-        : campaign
-    ));
+    updateCampaign({ 
+      campaignId, 
+      updates: { status: "paused" }
+    });
     
     toast({
       title: "Campaign Paused",
@@ -176,15 +95,10 @@ const MyCampaigns = () => {
   };
 
   const handleResumeCampaign = (campaignId: string) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === campaignId 
-        ? { 
-            ...campaign, 
-            status: campaign.previousStatus || "active-outreach", // Restore previous status
-            previousStatus: undefined 
-          }
-        : campaign
-    ));
+    updateCampaign({ 
+      campaignId, 
+      updates: { status: "active-outreach" }
+    });
     
     toast({
       title: "Campaign Resumed",
@@ -193,11 +107,10 @@ const MyCampaigns = () => {
   };
 
   const handleArchiveCampaign = (campaignId: string) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === campaignId 
-        ? { ...campaign, status: "archived" }
-        : campaign
-    ));
+    updateCampaign({ 
+      campaignId, 
+      updates: { status: "archived" }
+    });
     
     toast({
       title: "Campaign Archived",
@@ -212,7 +125,7 @@ const MyCampaigns = () => {
 
   const confirmDelete = () => {
     if (campaignToDelete) {
-      setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignToDelete));
+      deleteCampaign(campaignToDelete);
       toast({
         title: "Campaign Deleted",
         description: "The campaign has been permanently deleted."
@@ -228,23 +141,42 @@ const MyCampaigns = () => {
   };
 
   const handleSaveCampaign = (updatedCampaign: Campaign) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === updatedCampaign.id ? updatedCampaign : campaign
-    ));
+    updateCampaign({
+      campaignId: updatedCampaign.campaign_id,
+      updates: {
+        campaign_name: updatedCampaign.campaign_name,
+        niche: updatedCampaign.niche,
+        description_brief: updatedCampaign.description_brief,
+        desired_platforms: updatedCampaign.desired_platforms,
+        target_locations_india: updatedCampaign.target_locations_india,
+        budget_amount: updatedCampaign.budget_amount,
+        budget_currency: updatedCampaign.budget_currency
+      }
+    });
   };
 
   const handleViewProgress = (influencerId: string, campaignId: string) => {
-    // This would typically navigate to or open the detailed progress view
-    // For now, we'll show a toast as this connects to the Summary page functionality
     toast({
       title: "View Progress",
       description: `Opening detailed progress for influencer ${influencerId} in campaign ${campaignId}`,
     });
-    
-    // In a real implementation, this might:
-    // navigate(`/app/summary?campaign=${campaignId}&influencer=${influencerId}`);
-    // or open a detailed progress modal
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">My Influencer Campaigns</h1>
+            <p className="text-gray-600 mt-2">Manage and track all your influencer marketing campaigns</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -264,10 +196,10 @@ const MyCampaigns = () => {
       </div>
 
       {/* Campaigns Grid */}
-      {campaigns.length > 0 ? (
+      {campaigns && campaigns.length > 0 ? (
         <div className="grid gap-6">
           {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
+            <Card key={campaign.campaign_id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   {/* Campaign Info */}
@@ -275,17 +207,12 @@ const MyCampaigns = () => {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-xl font-semibold text-gray-900">
-                          {campaign.name}
-                          {campaign.isUserCreated && (
-                            <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700">
-                              New
-                            </Badge>
-                          )}
+                          {campaign.campaign_name}
                         </h3>
                         <div className="flex items-center space-x-4 mt-2">
                           <Badge variant="secondary">{campaign.niche}</Badge>
                           <div className="flex items-center space-x-1">
-                            {campaign.platforms.map((platform, index) => (
+                            {campaign.desired_platforms?.map((platform, index) => (
                               <div key={index} className="flex items-center">
                                 {getPlatformIcon(platform)}
                               </div>
@@ -303,15 +230,15 @@ const MyCampaigns = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {campaign.status === "paused" ? (
-                            <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.id)}>
+                            <DropdownMenuItem onClick={() => handleResumeCampaign(campaign.campaign_id)}>
                               <span>Resume Campaign</span>
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.id)}>
+                            <DropdownMenuItem onClick={() => handlePauseCampaign(campaign.campaign_id)}>
                               <span>Pause Campaign</span>
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => handleArchiveCampaign(campaign.id)}>
+                          <DropdownMenuItem onClick={() => handleArchiveCampaign(campaign.campaign_id)}>
                             <span>Archive Campaign</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
@@ -319,7 +246,7 @@ const MyCampaigns = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
-                            onClick={() => handleDeleteCampaign(campaign.id)}
+                            onClick={() => handleDeleteCampaign(campaign.campaign_id)}
                           >
                             <span>Delete Campaign</span>
                           </DropdownMenuItem>
@@ -327,37 +254,25 @@ const MyCampaigns = () => {
                       </DropdownMenu>
                     </div>
 
-                    <p className="text-gray-600 text-sm">{campaign.description}</p>
+                    <p className="text-gray-600 text-sm">{campaign.description_brief}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div className="flex items-center text-gray-600">
                         <Users className="h-4 w-4 mr-2" />
-                        <span>Contacted: {campaign.stats.contacted}</span>
-                      </div>
-                      <div className="flex items-center text-orange-600">
-                        <Target className="h-4 w-4 mr-2" />
-                        <span>Negotiations: {campaign.stats.negotiations}</span>
-                      </div>
-                      <div className="flex items-center text-green-600">
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          Deals: {campaign.stats.deals}
-                        </Badge>
+                        <span>Budget: {campaign.budget_currency} {campaign.budget_amount?.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Calendar className="h-4 w-4 mr-2" />
-                        <span className="text-xs">{campaign.stats.duration}</span>
+                        <span className="text-xs">
+                          {campaign.start_date && campaign.end_date 
+                            ? `${new Date(campaign.start_date).toLocaleDateString()} - ${new Date(campaign.end_date).toLocaleDateString()}`
+                            : 'Dates not set'
+                          }
+                        </span>
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <div className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          <span>{campaign.targetLocation}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium">Budget: {campaign.budget}</span>
-                        </div>
+                      <div className="flex items-center text-gray-600">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span>{campaign.target_locations_india?.join(', ') || 'All India'}</span>
                       </div>
                     </div>
                   </div>
@@ -371,7 +286,7 @@ const MyCampaigns = () => {
                     >
                       View Details & Manage
                     </Button>
-                    <Link to={`/app/influencers?campaign=${campaign.id}`} className="w-full">
+                    <Link to={`/app/influencers?campaign=${campaign.campaign_id}`} className="w-full">
                       <Button className="w-full bg-teal-500 hover:bg-teal-600">
                         Find Influencers for this Campaign
                       </Button>
@@ -423,8 +338,8 @@ const MyCampaigns = () => {
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete Campaign
+            <Button variant="destructive" onClick={confirmDelete} disabled={isDeletingCampaign}>
+              {isDeletingCampaign ? 'Deleting...' : 'Delete Campaign'}
             </Button>
           </div>
         </DialogContent>
