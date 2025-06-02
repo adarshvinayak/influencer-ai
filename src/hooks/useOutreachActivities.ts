@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { simulatePhoneCall } from '@/services/callSimulationService';
@@ -83,6 +82,26 @@ export const useOutreachActivities = (filters?: {
       }
 
       console.log('Found brand:', brandData);
+
+      // Check if outreach already exists for this combination
+      const { data: existingOutreach, error: checkError } = await supabase
+        .from('outreach_activities')
+        .select('outreach_id, status')
+        .eq('campaign_id', activityData.campaign_id)
+        .eq('influencer_id', activityData.influencer_id)
+        .eq('outreach_method', activityData.outreach_method)
+        .eq('brand_id', brandData.brand_id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing outreach:', checkError);
+        throw new Error(`Failed to check existing outreach: ${checkError.message}`);
+      }
+
+      if (existingOutreach) {
+        console.log('Existing outreach found:', existingOutreach);
+        throw new Error(`Outreach already exists for this influencer and campaign via ${activityData.outreach_method}. Current status: ${existingOutreach.status}`);
+      }
 
       // Prepare data for database insertion - only include valid database columns
       const dbData = {
