@@ -18,6 +18,13 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const transformErrorMessage = (errorMessage: string) => {
+    if (errorMessage.toLowerCase().includes('email not confirmed')) {
+      return 'Please verify your email - check your inbox for a confirmation link and click it to activate your account.';
+    }
+    return errorMessage;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -30,7 +37,7 @@ const LoginForm = () => {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        setError(transformErrorMessage(signInError.message));
         return;
       }
 
