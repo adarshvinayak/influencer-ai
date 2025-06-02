@@ -430,10 +430,11 @@ const InfluencerProfile = () => {
               🚀 Fantastic! Our AI agents are on it. We'll use {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} for {influencer.full_name} for '{campaigns?.find(c => c.campaign_id === selectedCampaign)?.campaign_name}'.
             </p>
             <div className="text-sm text-gray-500 space-y-1 mb-6">
-              {selectedMethod === 'phone' && <p>• ElevenLabs AI voice agent will call automatically</p>}
+              {selectedMethod === 'phone' && <p className="font-bold text-4xl">Click on Simulate Conversation to
+talk to the Agent as an influencer</p>}
               {(selectedMethod === 'email' || selectedMethod === 'chat') && <p>• GPT-4 crafts messages</p>}
             </div>
-            <p className="text-sm text-gray-600">Track progress on 'Summary' page & 'Notifications'. Good luck!</p>
+            
           </div>
           <div className="flex flex-col space-y-2">
             <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId}>
