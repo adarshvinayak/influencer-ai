@@ -1,35 +1,26 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Target, UsersRound, BrainCircuit, BotMessageSquare, MailCheck, AreaChart, FileLock2 } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Index = () => {
-  const features = [
-    {
-      icon: Target,
-      title: "1. Set Up & Strategize",
-      description: "Sign up, detail your brand, and craft targeted campaigns (niche, platforms, content goals, detailed brief)."
-    },
-    {
-      icon: BrainCircuit,
-      title: "2. Find Your Match with AI",
-      description: "Explore our curated Indian influencer database. Smart filters & AI (custom embeddings) match your campaign brief to relevant profiles."
-    },
-    {
-      icon: BotMessageSquare,
-      title: "3. Automate Smart Outreach",
-      description: "Our AI agents (GPT-4 for messages, ElevenLabs/Whisper for voice) initiate personalized, multilingual outreach and handle basic negotiations."
-    },
-    {
-      icon: AreaChart,
-      title: "4. Monitor, Sign & Succeed",
-      description: "Track outreach status, manage e-signed contracts (DocuSign/Native), process payments (Razorpay/Stripe), and analyze campaign performance."
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  const features = [{
+    icon: Target,
+    title: "1. Set Up & Strategize",
+    description: "Sign up, detail your brand, and craft targeted campaigns (niche, platforms, content goals, detailed brief)."
+  }, {
+    icon: BrainCircuit,
+    title: "2. Find Your Match with AI",
+    description: "Explore our curated Indian influencer database. Smart filters & AI (custom embeddings) match your campaign brief to relevant profiles."
+  }, {
+    icon: BotMessageSquare,
+    title: "3. Automate Smart Outreach",
+    description: "Our AI agents (GPT-4 for messages, ElevenLabs/Whisper for voice) initiate personalized, multilingual outreach and handle basic negotiations."
+  }, {
+    icon: AreaChart,
+    title: "4. Monitor, Sign & Succeed",
+    description: "Track outreach status, manage e-signed contracts (DocuSign/Native), process payments (Razorpay/Stripe), and analyze campaign performance."
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -54,10 +45,7 @@ const Index = () => {
           Personalized Influencer Campaigns That{" "}
           <span className="text-teal-500">Close Themselves</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Influencer-AI uses AI to help you discover influencers, automate outreach, and manage campaigns efficiently. 
-          From GPT-4 powered messaging to voice AI negotiations - we handle it all.
-        </p>
+        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto my-[23px]">The first end-to-end platform to automate creator discovery, outreach, voice negotiation, contracts, payments, and reporting. 10x your ROI without the overheads.</p>
         <Link to="/signup">
           <Button size="lg" className="bg-teal-500 hover:bg-teal-600 text-lg px-8 py-3">
             Start Your AI Campaign Today
@@ -75,8 +63,7 @@ const Index = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
+          {features.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
               <CardHeader className="text-center">
                 <div className="mx-auto mb-4 p-3 bg-teal-100 rounded-full w-fit">
                   <feature.icon className="h-8 w-8 text-teal-600" />
@@ -88,8 +75,7 @@ const Index = () => {
                   {feature.description}
                 </CardDescription>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -158,8 +144,6 @@ const Index = () => {
           <p className="text-gray-400">© 2025 Influencer-AI. Transforming influencer marketing with artificial intelligence.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
