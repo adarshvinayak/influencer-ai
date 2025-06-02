@@ -464,9 +464,11 @@ talk to the Agent as an influencer</p>}
             <Button onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId} className="bg-violet-50 text-inherit">
               Track on Outreach Detail Page
             </Button>
-            <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-red-600 text-lg font-bold bg-amber-200 hover:bg-amber-100">
-              Simulate Conversation
-            </Button>
+            {selectedMethod === 'phone' && (
+              <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-red-600 text-lg font-bold bg-amber-200 hover:bg-amber-100">
+                Simulate Conversation
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>
