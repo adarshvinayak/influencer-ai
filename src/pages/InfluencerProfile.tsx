@@ -445,9 +445,9 @@ const InfluencerProfile = () => {
               <CheckCircle className="h-6 w-6 mr-2 text-green-500" />
               AI Outreach Initiated!
             </DialogTitle>
-            <DialogDescription>
-              Your AI outreach has been successfully initiated. Track the progress and view real-time updates on your outreach activities.
-            </DialogDescription>
+            <DialogDescription>Your AI outreach has been successfully initiated.
+
+Note: Since this is work in progress, we are simulating the AI x Influencer interaction using Eleven Labs agent for voice.</DialogDescription>
           </DialogHeader>
           <div className="py-4 text-center">
             <p className="text-gray-600 mb-4">
@@ -464,11 +464,9 @@ talk to the Agent as an influencer</p>}
             <Button onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId} className="bg-violet-50 text-inherit">
               Track on Outreach Detail Page
             </Button>
-            {selectedMethod === 'phone' && (
-              <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-red-600 text-lg font-bold bg-amber-200 hover:bg-amber-100">
+            {selectedMethod === 'phone' && <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-red-600 text-lg font-bold bg-amber-200 hover:bg-amber-100">
                 Simulate Conversation
-              </Button>
-            )}
+              </Button>}
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>
