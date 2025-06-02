@@ -4,13 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Instagram, Youtube, Users, PhoneCall, MessageSquare, Mail, CheckCircle, BrainCircuit, Languages } from "lucide-react";
+import { MapPin, Instagram, Youtube, Users, PhoneCall, MessageSquare, Mail, CheckCircle, BrainCircuit, Languages, StopCircle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useOutreachActivities } from "@/hooks/useOutreachActivities";
 import { useInfluencerById, usePlatformAccounts } from "@/hooks/useInfluencers";
 import { useUserBrand } from "@/hooks/useUserBrand";
 import { useToast } from "@/hooks/use-toast";
+
 const InfluencerProfile = () => {
   const {
     id
@@ -22,6 +23,7 @@ const InfluencerProfile = () => {
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [selectedMethod, setSelectedMethod] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConversationModal, setShowConversationModal] = useState(false);
   const [createdOutreachId, setCreatedOutreachId] = useState("");
   const [isCreatingOutreach, setIsCreatingOutreach] = useState(false);
   const {
@@ -440,12 +442,59 @@ talk to the Agent as an influencer</p>}
             <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId}>
               Track on Outreach Detail Page
             </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConversationModal(true)}
+              className="border-blue-500 text-blue-500 hover:bg-blue-50"
+            >
+              Simulate Conversation
+            </Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Simulated Conversation Modal */}
+      <Dialog open={showConversationModal} onOpenChange={() => {}}>
+        <DialogContent className="max-w-4xl max-h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <PhoneCall className="h-6 w-6 mr-2 text-blue-500" />
+                Simulated Conversation
+              </div>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => setShowConversationModal(false)}
+                className="flex items-center gap-2"
+              >
+                <StopCircle className="h-4 w-4" />
+                Stop
+              </Button>
+            </DialogTitle>
+            <DialogDescription>
+              This is a demo simulation of how the AI agent would interact with an influencer. You can speak as the influencer to test the conversation flow.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-6 flex-1 overflow-hidden">
+            <div className="w-full h-[400px] border rounded-lg bg-gray-50 flex items-center justify-center">
+              <div 
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    <elevenlabs-convai agent-id="agent_01jwhcwysyf7xtzqr9bq7nt34t"></elevenlabs-convai>
+                    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+                  `
+                }}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
+
 export default InfluencerProfile;
