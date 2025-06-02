@@ -1,4 +1,4 @@
-# Influencer-AI 🤖✨
+# Influencer-AI
 
 A cutting-edge platform designed to streamline and automate influencer marketing using the power of Artificial Intelligence. This project helps brands discover relevant influencers, manage campaigns, automate outreach, and track performance.
 
