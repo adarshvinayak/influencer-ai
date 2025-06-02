@@ -25,7 +25,8 @@ const UniversalSearch = () => {
     { id: "3", name: "Organic Food Fest", status: "Completed" }
   ];
 
-  useEffect(() => {
+  const performSearch = () => {
+    console.log('Performing search for:', searchQuery);
     if (searchQuery.length > 0) {
       // Mock search logic
       const filteredInfluencers = mockInfluencers.filter(
@@ -48,6 +49,10 @@ const UniversalSearch = () => {
     } else {
       setShowResults(false);
     }
+  };
+
+  useEffect(() => {
+    performSearch();
   }, [searchQuery]);
 
   // Close dropdown when clicking outside
@@ -62,6 +67,17 @@ const UniversalSearch = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSearchClick = () => {
+    console.log('Search icon clicked');
+    performSearch();
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     if (status.includes("Active")) return "bg-green-100 text-green-800";
     if (status.includes("Negotiating")) return "bg-orange-100 text-orange-800";
@@ -72,11 +88,15 @@ const UniversalSearch = () => {
   return (
     <div className="relative" ref={searchRef}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search 
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-gray-600 transition-colors" 
+          onClick={handleSearchClick}
+        />
         <Input
           placeholder="Search influencers, campaigns..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
           className="pl-10 w-80"
         />
       </div>
