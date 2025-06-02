@@ -1,73 +1,76 @@
-# Welcome to your Lovable project
+# Influencer-AI 🤖✨
 
-## Project info
+A cutting-edge platform designed to streamline and automate influencer marketing using the power of Artificial Intelligence. This project helps brands discover relevant influencers, manage campaigns, automate outreach, and track performance.
 
-**URL**: https://lovable.dev/projects/7bd85016-4faf-49ec-a972-f7dd61a1fe48
+## Key Features
 
-## How can I edit this code?
+* **Brand & Campaign Management:** Easily create and manage your brand profile and marketing campaigns.
+* **AI-Assisted Influencer Discovery:** Find the perfect influencers for your campaigns using smart filters and AI-powered matching (conceptual).
+* **Automated AI Outreach:** Leverage AI (GPT-4o, ElevenLabs for voice) to handle initial outreach via email, (mocked) voice calls, and chat.
+* **Outreach & Deal Tracking:** Monitor the progress of each outreach in real-time, from initial contact to deal finalization.
+* **E-Signature Integration (Conceptual):** Streamline contract management with (mocked) DocuSign integration.
+* **Payment Processing (Conceptual):** Manage influencer payments through (mocked) Razorpay integration.
+* **Analytics Dashboard:** Gain insights into your campaign performance and outreach effectiveness.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+* **Frontend:** Next.js, React, Tailwind CSS, ShadCN UI
+* **Backend & Database:** Supabase (PostgreSQL, Auth, Storage)
+* **AI/ML (Conceptual Integration):**
+    * OpenAI GPT-4o (Outreach drafting, negotiation assistance, content summarization)
+    * ElevenLabs (Voice synthesis for AI calls)
+    * Whisper (Speech-to-text for call transcripts)
+* **Key Third-Party APIs (Conceptual Integration):**
+    * Gmail API (Email outreach)
+    * DocuSign API (E-Signatures)
+    * Razorpay API (Payments)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7bd85016-4faf-49ec-a972-f7dd61a1fe48) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+To get a local copy up and running, follow these simple steps.
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* Node.js (v18 or later recommended)
+* npm, yarn, or pnpm
+* A Supabase account and project set up.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1.  **Clone the repo:**
+    ```sh
+    git clone [https://your-repo-url.git](https://your-repo-url.git)
+    cd influencer-ai
+    ```
+2.  **Install NPM packages:**
+    ```sh
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
+3.  **Set up Environment Variables:**
+    Create a `.env.local` file in the root of your project and add your Supabase project URL and anon key:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    # Add any other API keys here for local development (BE MINDFUL OF SECURITY FOR PRODUCTION)
+    ```
+4.  **Run the Supabase schema:**
+    Ensure your Supabase database has the required tables. You can use the SQL scripts provided previously to set up the schema.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+5.  **Run the development server:**
+    ```sh
+    npm run dev
+    # or
+    yarn dev
+    # or
+    pnpm dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## License
 
-# Step 3: Install the necessary dependencies.
-npm i
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7bd85016-4faf-49ec-a972-f7dd61a1fe48) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
