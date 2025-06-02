@@ -42,8 +42,9 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
-          Transform Your Influencer Marketing with{" "}
-          <span className="text-teal-500">Close Themselves</span>
+          Personalized Influencer Campaigns That{" "}
+          <br />
+          <span className="text-green-500">Close Themselves</span>
         </h1>
         <p className="text-gray-600 mb-8 max-w-3xl px-0 text-center text-xl my-[36px] font-light mx-[117px]">The first end-to-end platform to automate creator discovery, outreach, voice negotiation, contracts, payments and reporting. 10x your ROI without the overheads.</p>
         <Link to="/signup">
