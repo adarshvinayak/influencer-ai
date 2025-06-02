@@ -13,6 +13,19 @@ interface ElevenLabsMessage {
   content: string;
 }
 
+interface ElevenLabsConversationTurn {
+  role: 'user' | 'agent';
+  message: string | null;
+  tool_calls: any[];
+  tool_results: any[];
+  feedback: any;
+  llm_override: any;
+  time_in_call_secs: number;
+  conversation_turn_metrics: any;
+  rag_retrieval_info: any;
+  llm_usage: any;
+}
+
 interface ElevenLabsResponse {
   status: string;
   conversation_id?: string;
@@ -44,35 +57,80 @@ serve(async (req) => {
     let simulationResponse: ElevenLabsResponse;
 
     try {
-      // Try to use real ElevenLabs API
-      console.log('Attempting to create conversation with ElevenLabs...');
+      // Make real ElevenLabs API call
+      console.log('Making real ElevenLabs API call...');
       
-      const conversationResponse = await fetch('https://api.elevenlabs.io/v1/convai/conversations', {
+      const agentId = 'agent_01jwhcwysyf7xtzqr9bq7nt34t';
+      
+      // Create simulation specification with context
+      const simulationSpec = {
+        simulationSpecification: {
+          simulatedUserConfig: {
+            prompt: {
+              prompt: `You are ${influencerName}, a content creator who has been contacted by ${brandName} about their ${campaignName} campaign. You are interested but want to negotiate and ask questions about compensation, creative freedom, timeline, and brand alignment. Be realistic and professional but also show some enthusiasm for good opportunities.`,
+              llm: 'gpt-4o',
+              temperature: 0.7,
+            },
+          },
+        },
+        extraEvaluationCriteria: [
+          {
+            id: 'engagement_check',
+            name: 'Engagement Check',
+            conversationGoalPrompt: 'The conversation resulted in positive engagement from the influencer.',
+            useKnowledgeBase: false,
+          },
+        ],
+      };
+
+      const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}/simulate-conversation`, {
         method: 'POST',
         headers: {
           'Xi-Api-Key': elevenlabsApiKey,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          agent_id: 'your-agent-id', // You'll need to replace this with an actual agent ID
-          // Add any other required parameters for the conversation
-        }),
+        body: JSON.stringify(simulationSpec),
       });
 
-      if (!conversationResponse.ok) {
-        throw new Error(`ElevenLabs API error: ${conversationResponse.status}`);
+      if (!elevenLabsResponse.ok) {
+        const errorText = await elevenLabsResponse.text();
+        console.error('ElevenLabs API error:', elevenLabsResponse.status, errorText);
+        throw new Error(`ElevenLabs API error: ${elevenLabsResponse.status}`);
       }
 
-      const conversationData = await conversationResponse.json();
-      console.log('ElevenLabs conversation created:', conversationData);
+      const elevenLabsData: ElevenLabsConversationTurn[] = await elevenLabsResponse.json();
+      console.log('ElevenLabs API response received, processing conversation...');
 
-      // For now, we'll fall back to mock data since we need a proper agent setup
-      throw new Error('Using mock data for now');
+      // Process the ElevenLabs response to extract messages
+      const processedMessages: ElevenLabsMessage[] = [];
+      
+      for (const turn of elevenLabsData) {
+        // Skip turns with no message (like tool calls without content)
+        if (!turn.message || turn.message.trim() === '') {
+          continue;
+        }
+
+        // Convert ElevenLabs format to our format
+        const processedMessage: ElevenLabsMessage = {
+          role: turn.role === 'agent' ? 'assistant' : 'user',
+          content: turn.message.trim()
+        };
+
+        processedMessages.push(processedMessage);
+      }
+
+      console.log(`Processed ${processedMessages.length} messages from ElevenLabs response`);
+
+      simulationResponse = {
+        status: 'completed',
+        conversation_id: `elevenlabs_conv_${Date.now()}`,
+        messages: processedMessages
+      };
 
     } catch (elevenLabsError) {
-      console.log('ElevenLabs API call failed, using mock simulation:', elevenLabsError);
+      console.log('ElevenLabs API call failed, using enhanced mock simulation:', elevenLabsError);
       
-      // Use enhanced mock simulation with more realistic conversation flow
+      // Fallback to enhanced mock simulation with more realistic conversation flow
       simulationResponse = {
         status: 'completed',
         conversation_id: `mock_conv_${Date.now()}`,
