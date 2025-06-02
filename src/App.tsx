@@ -18,6 +18,7 @@ import MyCampaigns from "./pages/MyCampaigns";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+import ConversationPage from "./pages/ConversationPage";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -48,6 +49,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/conversation" element={<ConversationPage />} />
             <Route path="/app" element={
               <ProtectedRoute>
                 <AppLayout />

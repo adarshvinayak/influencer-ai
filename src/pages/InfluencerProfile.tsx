@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Instagram, Youtube, Users, PhoneCall, MessageSquare, Mail, CheckCircle, BrainCircuit, Languages, StopCircle } from "lucide-react";
+import { MapPin, Instagram, Youtube, Users, PhoneCall, MessageSquare, Mail, CheckCircle, BrainCircuit, Languages } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useOutreachActivities } from "@/hooks/useOutreachActivities";
@@ -181,6 +181,14 @@ const InfluencerProfile = () => {
         </Card>
       </div>;
   }
+
+  const handleStartConversation = () => {
+    const params = new URLSearchParams({
+      influencer: influencer?.full_name || 'Influencer',
+      campaign: campaigns?.find(c => c.campaign_id === selectedCampaign)?.campaign_name || 'Campaign'
+    });
+    navigate(`/conversation?${params.toString()}`);
+  };
 
   return <div className="max-w-6xl mx-auto space-y-6">
       {/* Header Banner */}
@@ -464,7 +472,7 @@ talk to the Agent as an influencer</p>}
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => setShowConversationModal(true)}
+              onClick={handleStartConversation}
               className="border-blue-500 text-blue-500 hover:bg-blue-50"
             >
               Simulate Conversation
@@ -472,38 +480,6 @@ talk to the Agent as an influencer</p>}
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
               Discover More Influencers
             </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Simulated Conversation Modal */}
-      <Dialog open={showConversationModal} onOpenChange={() => {}}>
-        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <PhoneCall className="h-6 w-6 mr-2 text-blue-500" />
-                Simulated Conversation
-              </div>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={() => setShowConversationModal(false)}
-                className="flex items-center gap-2"
-              >
-                <StopCircle className="h-4 w-4" />
-                Stop
-              </Button>
-            </DialogTitle>
-            <DialogDescription>
-              This is a demo simulation of how the AI agent would interact with an influencer. You can speak as the influencer to test the conversation flow.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="p-6 flex-1 overflow-hidden">
-            <div className="w-full h-[calc(100vh-200px)] border rounded-lg bg-gray-50 flex items-center justify-center">
-              <div ref={conversationRef} className="w-full h-full"></div>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
