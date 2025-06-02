@@ -43,7 +43,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
           Personalized Influencer Campaigns That{" "}
-          <br/ >
+          <br />
           <span className="text-teal-500">Close Themselves</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto my-[23px]">The first end-to-end platform to automate creator discovery, outreach, voice negotiation, contracts, payments, and reporting. 10x your ROI without the overheads.</p>
