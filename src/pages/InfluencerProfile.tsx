@@ -228,7 +228,7 @@ const InfluencerProfile = () => {
                     Initiate AI Outreach to {influencer.full_name}
                   </DialogTitle>
                   <DialogDescription>
-                    Our AI will handle personalized outreach using the selected method and campaign details.
+                    Our AI will handle personalized outreach using the selected method and campaign details. Choose your preferred outreach method and campaign below.
                   </DialogDescription>
                 </DialogHeader>
                 
@@ -497,6 +497,9 @@ const InfluencerProfile = () => {
               <CheckCircle className="h-6 w-6 mr-2 text-green-500" />
               AI Outreach Initiated!
             </DialogTitle>
+            <DialogDescription>
+              Your AI outreach has been successfully initiated. Track the progress and view real-time updates on your outreach activities.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 text-center">
             <p className="text-gray-600 mb-4">

@@ -62,10 +62,10 @@ serve(async (req) => {
       
       const agentId = 'agent_01jwhcwysyf7xtzqr9bq7nt34t';
       
-      // Create simulation specification with context
-      const simulationSpec = {
-        simulationSpecification: {
-          simulatedUserConfig: {
+      // Create simulation specification with correct structure
+      const requestBody = {
+        simulation_specification: {
+          simulated_user_config: {
             prompt: {
               prompt: `You are ${influencerName}, a content creator who has been contacted by ${brandName} about their ${campaignName} campaign. You are interested but want to negotiate and ask questions about compensation, creative freedom, timeline, and brand alignment. Be realistic and professional but also show some enthusiasm for good opportunities.`,
               llm: 'gpt-4o',
@@ -73,15 +73,17 @@ serve(async (req) => {
             },
           },
         },
-        extraEvaluationCriteria: [
+        extra_evaluation_criteria: [
           {
             id: 'engagement_check',
             name: 'Engagement Check',
-            conversationGoalPrompt: 'The conversation resulted in positive engagement from the influencer.',
-            useKnowledgeBase: false,
+            conversation_goal_prompt: 'The conversation resulted in positive engagement from the influencer.',
+            use_knowledge_base: false,
           },
         ],
       };
+
+      console.log('Sending request to ElevenLabs with body:', JSON.stringify(requestBody, null, 2));
 
       const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}/simulate-conversation`, {
         method: 'POST',
@@ -89,7 +91,7 @@ serve(async (req) => {
           'Xi-Api-Key': elevenlabsApiKey,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(simulationSpec),
+        body: JSON.stringify(requestBody),
       });
 
       if (!elevenLabsResponse.ok) {
@@ -100,6 +102,7 @@ serve(async (req) => {
 
       const elevenLabsData: ElevenLabsConversationTurn[] = await elevenLabsResponse.json();
       console.log('ElevenLabs API response received, processing conversation...');
+      console.log('Raw ElevenLabs response:', JSON.stringify(elevenLabsData, null, 2));
 
       // Process the ElevenLabs response to extract messages
       const processedMessages: ElevenLabsMessage[] = [];
