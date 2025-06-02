@@ -461,10 +461,10 @@ talk to the Agent as an influencer</p>}
             
           </div>
           <div className="flex flex-col space-y-2">
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId}>
+            <Button onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId} className="bg-violet-50 text-inherit">
               Track on Outreach Detail Page
             </Button>
-            <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-blue-500 hover:bg-blue-50">
+            <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-red-600 text-lg font-bold bg-amber-200 hover:bg-amber-100">
               Simulate Conversation
             </Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
