@@ -104,7 +104,7 @@ const Index = () => {
                 <CardTitle>Voice AI Calls</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">ElevenLabs TTS & Whisper STT enable natural voice conversations with influencers</p>
+                <p className="text-gray-600">ElevenLabs enable natural voice conversations with influencers</p>
               </CardContent>
             </Card>
             
