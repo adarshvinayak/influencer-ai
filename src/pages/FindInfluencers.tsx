@@ -99,7 +99,7 @@ const FindInfluencers = () => {
   return <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Discover Influencers</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Discover Influencers (Dummy Data)</h1>
         
       </div>
 
