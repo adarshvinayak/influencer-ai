@@ -482,14 +482,7 @@ talk to the Agent as an influencer</p>}
           
           <div className="p-6 flex-1 overflow-hidden">
             <div className="w-full h-[calc(100vh-200px)] border rounded-lg bg-gray-50 flex items-center justify-center">
-              <div 
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    <elevenlabs-convai agent-id="agent_01jwhcwysyf7xtzqr9bq7nt34t"></elevenlabs-convai>
-                    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-                  `
-                }}
-              />
+              <elevenlabs-convai agent-id="agent_01jwhcwysyf7xtzqr9bq7nt34t"></elevenlabs-convai>
             </div>
           </div>
         </DialogContent>
