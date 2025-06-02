@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -77,9 +78,14 @@ const ConversationPage = () => {
             {/* Screenshot Image */}
             <div className="mb-4">
               <img 
-                src="/screenshot.png" 
+                src="./screenshot.png" 
                 alt="Conversation Screenshot" 
                 className="w-full max-w-2xl mx-auto rounded-lg shadow-sm"
+                onError={(e) => {
+                  console.log('Image failed to load:', e);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={() => console.log('Image loaded successfully')}
               />
             </div>
             
