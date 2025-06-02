@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,8 @@ const InfluencerProfile = () => {
   const [showConversationModal, setShowConversationModal] = useState(false);
   const [createdOutreachId, setCreatedOutreachId] = useState("");
   const [isCreatingOutreach, setIsCreatingOutreach] = useState(false);
+  const conversationRef = useRef<HTMLDivElement>(null);
+
   const {
     campaigns
   } = useCampaigns();
@@ -63,6 +65,22 @@ const InfluencerProfile = () => {
       year: "2023"
     }]
   };
+
+  // Effect to create the ElevenLabs widget when the conversation modal opens
+  useEffect(() => {
+    if (showConversationModal && conversationRef.current) {
+      // Clear any existing content
+      conversationRef.current.innerHTML = '';
+      
+      // Create the elevenlabs-convai element
+      const convaiElement = document.createElement('elevenlabs-convai');
+      convaiElement.setAttribute('agent-id', 'agent_01jwhcwysyf7xtzqr9bq7nt34t');
+      
+      // Append to the ref container
+      conversationRef.current.appendChild(convaiElement);
+    }
+  }, [showConversationModal]);
+
   const handleOutreachSubmit = async () => {
     if (!selectedCampaign || !selectedMethod || !influencer || !userBrand) {
       toast({
@@ -144,6 +162,7 @@ const InfluencerProfile = () => {
         return <Users className="h-5 w-5 text-gray-500" />;
     }
   };
+
   if (influencerLoading) {
     return <div className="flex items-center justify-center py-16">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
@@ -162,6 +181,7 @@ const InfluencerProfile = () => {
         </Card>
       </div>;
   }
+
   return <div className="max-w-6xl mx-auto space-y-6">
       {/* Header Banner */}
       <Card>
@@ -482,7 +502,7 @@ talk to the Agent as an influencer</p>}
           
           <div className="p-6 flex-1 overflow-hidden">
             <div className="w-full h-[calc(100vh-200px)] border rounded-lg bg-gray-50 flex items-center justify-center">
-              <elevenlabs-convai agent-id="agent_01jwhcwysyf7xtzqr9bq7nt34t"></elevenlabs-convai>
+              <div ref={conversationRef} className="w-full h-full"></div>
             </div>
           </div>
         </DialogContent>
