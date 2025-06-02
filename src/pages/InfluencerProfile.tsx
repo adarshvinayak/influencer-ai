@@ -11,7 +11,6 @@ import { useOutreachActivities } from "@/hooks/useOutreachActivities";
 import { useInfluencerById, usePlatformAccounts } from "@/hooks/useInfluencers";
 import { useUserBrand } from "@/hooks/useUserBrand";
 import { useToast } from "@/hooks/use-toast";
-
 const InfluencerProfile = () => {
   const {
     id
@@ -27,7 +26,6 @@ const InfluencerProfile = () => {
   const [createdOutreachId, setCreatedOutreachId] = useState("");
   const [isCreatingOutreach, setIsCreatingOutreach] = useState(false);
   const conversationRef = useRef<HTMLDivElement>(null);
-
   const {
     campaigns
   } = useCampaigns();
@@ -71,16 +69,15 @@ const InfluencerProfile = () => {
     if (showConversationModal && conversationRef.current) {
       // Clear any existing content
       conversationRef.current.innerHTML = '';
-      
+
       // Create the elevenlabs-convai element
       const convaiElement = document.createElement('elevenlabs-convai');
       convaiElement.setAttribute('agent-id', 'agent_01jwhcwysyf7xtzqr9bq7nt34t');
-      
+
       // Append to the ref container
       conversationRef.current.appendChild(convaiElement);
     }
   }, [showConversationModal]);
-
   const handleOutreachSubmit = async () => {
     if (!selectedCampaign || !selectedMethod || !influencer || !userBrand) {
       toast({
@@ -162,7 +159,6 @@ const InfluencerProfile = () => {
         return <Users className="h-5 w-5 text-gray-500" />;
     }
   };
-
   if (influencerLoading) {
     return <div className="flex items-center justify-center py-16">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
@@ -181,7 +177,6 @@ const InfluencerProfile = () => {
         </Card>
       </div>;
   }
-
   const handleStartConversation = () => {
     const params = new URLSearchParams({
       influencer: influencer?.full_name || 'Influencer',
@@ -189,7 +184,6 @@ const InfluencerProfile = () => {
     });
     navigate(`/conversation?${params.toString()}`);
   };
-
   return <div className="max-w-6xl mx-auto space-y-6">
       {/* Header Banner */}
       <Card>
@@ -460,7 +454,7 @@ const InfluencerProfile = () => {
               🚀 Fantastic! Our AI agents are on it. We'll use {selectedMethod === 'phone' ? 'Phone Call' : selectedMethod === 'chat' ? 'Chat' : 'Email'} for {influencer.full_name} for '{campaigns?.find(c => c.campaign_id === selectedCampaign)?.campaign_name}'.
             </p>
             <div className="text-sm text-gray-500 space-y-1 mb-6">
-              {selectedMethod === 'phone' && <p className="font-bold text-3xl">Click on Simulate Conversation to
+              {selectedMethod === 'phone' && <p className="font-bold text-3xl text-red-600">Click on Simulate Conversation to
 talk to the Agent as an influencer</p>}
               {(selectedMethod === 'email' || selectedMethod === 'chat') && <p>• GPT-4 crafts messages</p>}
             </div>
@@ -470,11 +464,7 @@ talk to the Agent as an influencer</p>}
             <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleTrackOnOutreachPage} disabled={!createdOutreachId}>
               Track on Outreach Detail Page
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleStartConversation}
-              className="border-blue-500 text-blue-500 hover:bg-blue-50"
-            >
+            <Button variant="outline" onClick={handleStartConversation} className="border-blue-500 text-blue-500 hover:bg-blue-50">
               Simulate Conversation
             </Button>
             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
@@ -485,5 +475,4 @@ talk to the Agent as an influencer</p>}
       </Dialog>
     </div>;
 };
-
 export default InfluencerProfile;
