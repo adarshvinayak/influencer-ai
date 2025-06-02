@@ -51,8 +51,8 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
-          Transform Your Influencer Marketing with{" "}
-          <span className="text-teal-500">AI Precision</span>
+          Personalized Influencer Campaigns That{" "}
+          <span className="text-teal-500">Close Themselves</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
           Influencer-AI uses AI to help you discover influencers, automate outreach, and manage campaigns efficiently. 
