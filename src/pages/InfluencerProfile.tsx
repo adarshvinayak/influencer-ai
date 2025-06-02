@@ -458,7 +458,7 @@ talk to the Agent as an influencer</p>}
 
       {/* Simulated Conversation Modal */}
       <Dialog open={showConversationModal} onOpenChange={() => {}}>
-        <DialogContent className="max-w-4xl max-h-[80vh] p-0">
+        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center">
@@ -481,7 +481,7 @@ talk to the Agent as an influencer</p>}
           </DialogHeader>
           
           <div className="p-6 flex-1 overflow-hidden">
-            <div className="w-full h-[400px] border rounded-lg bg-gray-50 flex items-center justify-center">
+            <div className="w-full h-[calc(100vh-200px)] border rounded-lg bg-gray-50 flex items-center justify-center">
               <div 
                 dangerouslySetInnerHTML={{
                   __html: `
