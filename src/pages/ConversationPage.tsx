@@ -62,8 +62,8 @@ const ConversationPage = () => {
         {/* Conversation Widget Container */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-2">Live AI Conversation</h2>
-            <p className="text-gray-600 text-sm">This is a demo simulation of how the AI agent would interact with an influencer. You can speak as the influencer to test the conversation flow. Start the call from the widget below.</p>
+            <h2 className="text-xl font-semibold mb-2">Live AI Conversation - Start the call from the Widget below</h2>
+            <p className="text-gray-600 text-sm">This is a demo simulation of how the AI agent would interact with an influencer. You can speak as the influencer to test the conversation flow. Start the call from the widget below.</p>
           </div>
           
           <div className="border rounded-lg bg-gray-50 p-4" style={{
